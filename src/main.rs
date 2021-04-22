@@ -10,11 +10,19 @@ fn get_dmi_key(key: &str) -> Result<String, io::Error> {
 }
 
 fn main() {
-    let vendor_key = "sys_vendor";
-    let vendor = get_dmi_key(&vendor_key);
-    let vendor = match vendor {
-	Ok(vendor) => vendor,
-	Err(e) => panic!("nothing: {}", e),
-    };
-    println!("{} is {}", vendor_key, vendor)
+    let dmi_info_name_keys = [
+	("system", "sys_vendor"),
+	("bios", "bios_vendor"),
+	("chassis", "chassis_vendor"),
+	("board", "board_vendor"),
+    ];
+    for dmi_name_key in dmi_info_name_keys.iter() {
+	let sysfs_key = dmi_name_key.1;
+	let data = get_dmi_key(&sysfs_key);
+	let data = match data {
+	    Ok(data) => data,
+	    Err(e) => panic!("Couldn't read {}: {}", sysfs_key, e),
+	};
+	println!("{} is {}", dmi_name_key.0, data);
+    }
 }
