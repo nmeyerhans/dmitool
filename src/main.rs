@@ -9,7 +9,7 @@ fn get_dmi_key(key: &str) -> Result<String, io::Error> {
     Ok(r)
 }
 
-fn main() {
+fn print_vendor_data() {
     let dmi_info_name_keys = [
 	("system", "sys_vendor"),
 	("bios", "bios_vendor"),
@@ -25,4 +25,7 @@ fn main() {
 	};
 	println!("{} is {}", dmi_name_key.0, data);
     }
+}
+fn main() {
+    print_vendor_data();
 }
