@@ -13,11 +13,10 @@ fn print_dmi_id_fields(dmi_info_name_keys: &[(&str, &str)]) {
     for dmi_name_key in dmi_info_name_keys.iter() {
 	let sysfs_key = dmi_name_key.1;
 	let data = get_dmi_key(&sysfs_key);
-	let data = match data {
-	    Ok(data) => data,
-	    Err(e) => panic!("Couldn't read {}: {}", sysfs_key, e),
+	match data {
+	    Ok(data) => println!("  - {} is {}", dmi_name_key.0, data),
+	    Err(e) => println!("  * Error reading {}: {}", dmi_name_key.0, e),
 	};
-	println!("  - {} is {}", dmi_name_key.0, data);
     }
 }
 
