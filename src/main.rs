@@ -31,6 +31,12 @@ fn print_vendor_data() {
     print_dmi_id_fields(&dmi_info_name_keys);
 }
 
+fn print_system_data() {
+    let keys = [("Vendor", "sys_vendor")];
+    println!("System data:");
+    print_dmi_id_fields(&keys);
+}
+
 fn print_product_data() {
     let dmi_info_name_keys = [
         ("Family", "product_family"),
@@ -45,7 +51,20 @@ fn print_product_data() {
     print_dmi_id_fields(&dmi_info_name_keys);
 }
 
+fn print_bios_data() {
+    let keys = [
+        ("Date", "bios_date"),
+        ("Release", "bios_date"),
+        ("Vendor", "bios_vendor"),
+        ("Version", "bios_version"),
+    ];
+    println!("BIOS Information");
+    print_dmi_id_fields(&keys);
+}
+
 fn main() {
     print_vendor_data();
     print_product_data();
+    print_system_data();
+    print_bios_data();
 }
