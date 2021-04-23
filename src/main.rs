@@ -2,6 +2,8 @@ use std::fs;
 use std::io;
 use std::path::PathBuf;
 
+use clap::{App, Arg};
+
 fn get_dmi_key(key: &str) -> Result<String, io::Error> {
     let id_root = "/sys/class/dmi/id";
     let path: PathBuf = [id_root, key].iter().collect();
@@ -63,8 +65,24 @@ fn print_bios_data() {
 }
 
 fn main() {
-    print_vendor_data();
-    print_product_data();
-    print_system_data();
-    print_bios_data();
+    let matches = App::new("My Test Program")
+        .version("0.1.0")
+        .author("Noah Meyerhans <frodo@morgul.net>")
+        .about("Prints system information")
+        .arg(
+            Arg::with_name("zero")
+                .short("0")
+                .takes_value(false)
+                .help("print table 0"),
+        )
+        .get_matches();
+
+    if matches.is_present("zero") {
+        println!("Getting table zero");
+    } else {
+        print_vendor_data();
+        print_product_data();
+        print_system_data();
+        print_bios_data();
+    }
 }
