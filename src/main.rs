@@ -1,3 +1,19 @@
+// Copyright Noah Meyerhans <frodo@morgul.net>
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation; version 2.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+// 02110-1301, USA.
+
 use std::fs;
 use std::io;
 use std::path::PathBuf;
@@ -192,10 +208,10 @@ fn print_bios_table(table: &str, data: &Vec<u8>) {
 }
 
 fn main() {
-    let matches = App::new("My Test Program")
+    let matches = App::new("DMI decoder tool")
         .version("0.1.0")
         .author("Noah Meyerhans <frodo@morgul.net>")
-        .about("Prints system information")
+        .about("Decodes and prints system information from the SMBIOS")
         .arg(
             Arg::with_name("zero")
                 .short("0")
