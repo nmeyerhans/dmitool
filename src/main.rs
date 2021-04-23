@@ -4,11 +4,20 @@ use std::path::PathBuf;
 
 use clap::{App, Arg};
 
+const DMI_ID_ROOT: &str = "/sys/class/dmi/id";
+const DMI_ENTRIES_ROOT: &str = "/sys/firmware/dmi/entries";
+
 fn get_dmi_key(key: &str) -> Result<String, io::Error> {
-    let id_root = "/sys/class/dmi/id";
-    let path: PathBuf = [id_root, key].iter().collect();
+    let path: PathBuf = [DMI_ID_ROOT, key].iter().collect();
     let r = String::from(fs::read_to_string(path)?.as_str().trim());
     Ok(r)
+}
+
+fn read_table(id: &str) -> Result<Vec<u8>, io::Error> {
+    let root: PathBuf = [DMI_ENTRIES_ROOT, id].iter().collect();
+    let rawpath: PathBuf = root.join("raw");
+    println!("Reading table from {}", rawpath.as_path().to_str().unwrap());
+    fs::read(rawpath.as_path())
 }
 
 fn print_dmi_id_fields(dmi_info_name_keys: &[(&str, &str)]) {
@@ -64,6 +73,54 @@ fn print_bios_data() {
     print_dmi_id_fields(&keys);
 }
 
+fn decode_bios_extension_byte1(data: &Vec<u8>) {
+    let b: u8 = data[18];
+    let bit_strings = [
+        (1, "ACPI is supported"),
+        (1 << 1, "USB Legacy is supported"),
+        (1 << 2, "AGP is supported"),
+        (1 << 3, "I2O boot is supported"),
+        (1 << 4, "LS-120 SuperDisk boot is supported"),
+        (1 << 5, "ATAPI ZIP drive boot is supported"),
+        (1 << 6, "1394 boot is supported"),
+        (1 << 7, "Smart batter is supported"),
+    ];
+    println!("Decoding BIOS Characteristics Extension byte 1:");
+    for bit in bit_strings.iter() {
+        if (b & bit.0) != 0 {
+            println!("  + {}", bit.1);
+        }
+    }
+}
+
+fn decode_bios_extension_byte2(data: &Vec<u8>) {
+    let b: u8 = data[19];
+    let bit_strings = [
+        (1, "BIOS Boot Specification is supported"),
+        (1 << 1, "F-Key initiated network boot is supported"),
+        (1 << 2, "Enable targeted content distribution"),
+        (1 << 3, "UEFI Specification is supported"),
+        (1 << 4, "SMBIOS table describes a virtual machine"),
+        /* Remaining bits are reserved for future use */
+    ];
+    println!("Decoding BIOS Characteristics Extension byte 2:");
+    for bit in bit_strings.iter() {
+        if (b & bit.0) != 0 {
+            println!("  + {}", bit.1);
+        }
+    }
+}
+
+fn print_raw_table(table: &str, data: &Vec<u8>) {
+    println!("Printing table {}", table);
+    if data.len() > 19 {
+        decode_bios_extension_byte1(data);
+    }
+    if data.len() > 20 {
+        decode_bios_extension_byte2(data);
+    }
+}
+
 fn main() {
     let matches = App::new("My Test Program")
         .version("0.1.0")
@@ -79,6 +136,12 @@ fn main() {
 
     if matches.is_present("zero") {
         println!("Getting table zero");
+        let table = "0-0";
+        let res = read_table(&table);
+        match res {
+            Ok(table_data) => print_raw_table(&table, &table_data),
+            Err(e) => println!("Reading table {}: {}", table, e),
+        }
     } else {
         print_vendor_data();
         print_product_data();
