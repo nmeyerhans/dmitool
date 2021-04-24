@@ -14,6 +14,8 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 // 02110-1301, USA.
 
+mod raw;
+
 use std::fs;
 use std::io;
 use std::path::PathBuf;
@@ -218,6 +220,14 @@ fn main() {
                 .takes_value(false)
                 .help("print table 0"),
         )
+        .arg(
+            Arg::with_name("raw")
+                .short("r")
+                .long("raw")
+                .takes_value(false)
+                .conflicts_with("zero")
+                .help("read raw entrypoint"),
+        )
         .get_matches();
 
     if matches.is_present("zero") {
@@ -228,6 +238,12 @@ fn main() {
             Ok(table_data) => print_bios_table(&table, &table_data),
             Err(e) => println!("Reading table {}: {}", table, e),
         }
+    } else if matches.is_present("raw") {
+        println!("Will read from /sys/firmware/dmi/tables/smbios_entry_point");
+        match raw::decode_bios_raw_table() {
+            Ok(()) => (),
+            Err(e) => println!("Unable to read raw table: {}", e),
+        };
     } else {
         print_vendor_data();
         print_product_data();
