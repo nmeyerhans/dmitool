@@ -14,12 +14,13 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 // 02110-1301, USA.
 
+mod err;
+
 use std::fs;
 use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 use std::io::SeekFrom;
-use std::io::{Error, ErrorKind};
 use std::path::Path;
 use std::str;
 
@@ -34,10 +35,10 @@ fn print_header_32(_ep: &[u8]) {
     println!("Not implemented");
 }
 
-fn print_header_64(ep: &[u8]) -> Result<(), io::Error> {
+fn print_header_64(ep: &[u8]) -> Result<(), err::DMIParserError> {
     if ep[6] != 0x18 {
         println!("Got unexpected header length");
-        return Err(Error::new(ErrorKind::Other, "Unexpected header length!"));
+        return Err(err::DMIParserError::HeaderDataError);
     }
     let maj = ep[7];
     let min = ep[8];
@@ -47,7 +48,7 @@ fn print_header_64(ep: &[u8]) -> Result<(), io::Error> {
         println!("Using SMBIOS 3.0 entrypoint");
     } else {
         println!("Unknown entrypoint revision {}", ep[0xa]);
-        return Err(Error::new(ErrorKind::Other, "oh no!"));
+        return Err(err::DMIParserError::HeaderDataError);
     }
 
     // Is there a more efficient way to do this?
@@ -94,10 +95,10 @@ fn read_null_terminated_string(fh: &File) -> Result<String, io::Error> {
     Ok(r)
 }
 
-pub fn decode_bios_raw_table() -> Result<(), io::Error> {
+pub fn decode_bios_raw_table() -> Result<(), err::DMIParserError> {
     let ep: Vec<u8> = match read_entrypoint() {
         Ok(data) => data,
-        Err(e) => return Err(e),
+        Err(e) => return Err(err::DMIParserError::IOError(e)),
     };
     if str::from_utf8(&ep[0..4]).unwrap() == "_SM_" {
         println!("Found a 32 bit header!");
