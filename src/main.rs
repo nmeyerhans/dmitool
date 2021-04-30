@@ -240,10 +240,11 @@ fn main() {
         }
     } else if matches.is_present("raw") {
         println!("Will read from /sys/firmware/dmi/tables/smbios_entry_point");
-        match raw::decode_bios_raw_table() {
-            Ok(()) => (),
-            Err(e) => println!("Unable to read raw table: {}", e),
+        let t = match raw::decode_bios_raw_table() {
+            Ok(t) => t,
+            Err(e) => panic!("Unable to read raw table: {}", e),
         };
+        println!("Got a {} table!", t.version());
     } else {
         print_vendor_data();
         print_product_data();
