@@ -14,7 +14,7 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 // 02110-1301, USA.
 
-mod raw;
+mod dmi;
 
 use std::fs;
 use std::io;
@@ -240,7 +240,7 @@ fn main() {
         }
     } else if matches.is_present("raw") {
         println!("Will read from /sys/firmware/dmi/tables/smbios_entry_point");
-        let t = match raw::decode_bios_raw_table() {
+        let t = match dmi::raw::decode_bios_raw_table() {
             Ok(t) => t,
             Err(e) => panic!("Unable to read raw table: {}", e),
         };

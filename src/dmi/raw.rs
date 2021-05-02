@@ -14,7 +14,9 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 // 02110-1301, USA.
 
-use crate::raw::table::Table;
+use crate::dmi::err;
+// use crate::dmi::raw::table::Table;
+use table::Table;
 
 fn print_header_32(_ep: &[u8]) {
     println!("Not implemented");
@@ -23,39 +25,6 @@ fn print_header_32(_ep: &[u8]) {
 pub fn decode_bios_raw_table() -> Result<Table, err::DMIParserError> {
     let t: Table = Table::read()?;
     Ok(t)
-}
-
-pub mod err {
-    #[derive(Debug)]
-    pub enum DMIParserError {
-        HeaderDataError,
-        IOError(std::io::Error),
-        //IoError { e: std::io::Error },
-    }
-
-    impl std::error::Error for DMIParserError {
-        fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-            match *self {
-                DMIParserError::HeaderDataError => None,
-                DMIParserError::IOError(ref e) => Some(e),
-            }
-        }
-    }
-
-    impl std::fmt::Display for DMIParserError {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            match *self {
-                DMIParserError::HeaderDataError => write!(f, "Header error"),
-                DMIParserError::IOError(ref e) => write!(f, "IOError: {}", e),
-            }
-        }
-    }
-
-    impl From<std::io::Error> for DMIParserError {
-        fn from(error: std::io::Error) -> Self {
-            DMIParserError::IOError(error)
-        }
-    }
 }
 
 #[allow(dead_code)]
@@ -68,8 +37,8 @@ pub mod table {
     use std::path::Path;
     use std::str;
 
-    use crate::raw;
-    use crate::raw::err;
+    use crate::dmi::err;
+    use crate::dmi::raw;
 
     const ENTRYPOINT: &str = "/sys/firmware/dmi/tables/smbios_entry_point";
     const TABLES: &str = "/sys/firmware/dmi/tables/DMI";
