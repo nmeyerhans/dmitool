@@ -6,6 +6,22 @@ from the
 firmware as exposed by Linux via the /sys/class/dmi/id and
 /sys/firmware/dmi/entries interfaces.
 
+Usage:
+
+    DMI decoder tool 0.1.0
+    Noah Meyerhans <frodo@morgul.net>
+    Decodes and prints system information from the SMBIOS
+
+    USAGE:
+        dmitool [FLAGS]
+
+    FLAGS:
+        -h, --help       Prints help information
+        -r, --raw        read raw entrypoint
+        -V, --version    Prints version information
+        -0               print table 0
+
+
 This project is mostly an excuse for me to write Rust code while
 digging in to the SMBIOS structures.  You probably don't want to use
 this.  [dmidecode](https://nongnu.org/dmidecode/) is a much more
