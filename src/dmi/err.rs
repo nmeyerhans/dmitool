@@ -18,7 +18,7 @@
 pub enum DMIParserError {
     HeaderDataError,
     IOError(std::io::Error),
-    //IoError { e: std::io::Error },
+    NotImplemented,
 }
 
 impl std::error::Error for DMIParserError {
@@ -26,6 +26,7 @@ impl std::error::Error for DMIParserError {
         match *self {
             DMIParserError::HeaderDataError => None,
             DMIParserError::IOError(ref e) => Some(e),
+            DMIParserError::NotImplemented => None,
         }
     }
 }
@@ -35,6 +36,7 @@ impl std::fmt::Display for DMIParserError {
         match *self {
             DMIParserError::HeaderDataError => write!(f, "Header error"),
             DMIParserError::IOError(ref e) => write!(f, "IOError: {}", e),
+            DMIParserError::NotImplemented => write!(f, "Not implemented"),
         }
     }
 }

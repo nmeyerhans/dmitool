@@ -41,6 +41,7 @@ fn read_entrypoint() -> Result<Vec<u8>, io::Error> {
     fs::read(Path::new(ENTRYPOINT))
 }
 
+#[allow(dead_code)]
 fn print_header_32(_: &Vec<u8>) -> Result<(), err::DMIParserError> {
     eprintln!("32-bit header support is implemented");
     Ok(())
@@ -109,44 +110,34 @@ fn read_null_terminated_string(fh: &File) -> Result<String, io::Error> {
 
 impl Table {
     pub fn read() -> Result<Table, err::DMIParserError> {
-        let mut res = Table {
-            major: 0,
-            minor: 0,
-            rev: 0,
-            bits: Vec::new(),
-            strings: Vec::new(),
-        };
         let ep: Vec<u8> = match read_entrypoint() {
             Ok(data) => data,
             Err(e) => return Err(err::DMIParserError::IOError(e)),
         };
         if str::from_utf8(&ep[0..4]).unwrap() == "_SM_" {
-            println!("Found a 32 bit header!");
-            let r = print_header_32(&ep);
-            match r {
-                Ok(_r) => println!("end of 32 bit header"),
-                Err(e) => return Err(e),
-            };
+            eprintln!("Found a 32 bit header!");
+            Table::from_header_32(&ep)
         } else if str::from_utf8(&ep[0..5]).unwrap() == "_SM3_" {
             println!("Found a 64 bit header!");
-            //print_header_64(&ep)?;
-            res.read_header_64(&ep)?;
+            Table::from_header_64(&ep)
+        } else {
+            Err(err::DMIParserError::HeaderDataError)
         }
-        Ok(res)
     }
 
-    fn read_header_64(&mut self, header: &[u8]) -> Result<(), err::DMIParserError> {
+    fn from_header_32(_header: &[u8]) -> Result<Table, err::DMIParserError> {
+        Err(err::DMIParserError::NotImplemented)
+    }
+
+    fn from_header_64(header: &[u8]) -> Result<Table, err::DMIParserError> {
         if header[6] != 0x18 {
             println!("Got unexpected header length");
             return Err(err::DMIParserError::HeaderDataError);
         }
-        self.major = header[7];
-        self.minor = header[8];
-        self.rev = header[9];
 
         println!(
             "SMBIOS spec version: {}.{}.{}",
-            self.major, self.minor, self.rev
+            header[7], header[8], header[9]
         );
         if header[0xa] == 0x1 {
             println!("Using SMBIOS 3.0 entrypoint");
@@ -154,7 +145,13 @@ impl Table {
             println!("Unknown entrypoint revision {}", header[0xa]);
             return Err(err::DMIParserError::HeaderDataError);
         }
-        Ok(())
+        Ok(Table {
+            major: header[7],
+            minor: header[8],
+            rev: header[9],
+            bits: Vec::new(),
+            strings: Vec::new(),
+        })
     }
 
     pub fn version(&self) -> String {
