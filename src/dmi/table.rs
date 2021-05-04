@@ -22,8 +22,12 @@ use std::io::SeekFrom;
 
 const TABLES: &str = "/sys/firmware/dmi/tables/DMI";
 
+#[derive(Debug)]
 #[allow(dead_code)]
 pub struct Table {
+    pub location: u64,
+    pub string_location: u64,
+    pub next_loc: u64,
     pub bits: Vec<u8>,
     pub strings: Vec<String>,
 }
@@ -69,27 +73,43 @@ fn read_null_terminated_string(fh: &File) -> Result<String, io::Error> {
 
 impl Table {
     pub fn read() -> Result<Table, err::DMIParserError> {
+        Table::read_at(0)
+    }
+
+    pub fn read_at(loc: u64) -> Result<Table, err::DMIParserError> {
         let mut f = File::open(TABLES)?;
+        f.seek(SeekFrom::Start(loc))?;
         let mut buf = [0; 256];
         // read the header, which gives us the table ID and size
-        f.read_exact(&mut buf[0..3])?;
+        let res = f.read(&mut buf[0..4])?;
 
         let offset: usize = 4;
-        let end: usize = buf[1].into();
-        f.read(&mut buf[offset..end])?;
+        let end: usize = (buf[1]).into();
+        let res = f.read(&mut buf[offset..end])?;
 
+        let string_location = f.stream_position()?;
         let mut strings: Vec<String> = Vec::new();
         loop {
             let s = match read_null_terminated_string(&f) {
                 Ok(s) => s,
-                Err(_e) => break,
+                Err(e) => {
+                    eprintln!("While reading strings: {}", e);
+                    break;
+                }
             };
-            if s.len() == 0 {
+            if s.is_empty() {
+                if strings.len() == 0 {
+                    // special case: this table structure has no strings
+                    f.seek(SeekFrom::Current(1))?;
+                }
                 break;
             }
             strings.push(s);
         }
         Ok(Table {
+            location: loc,
+            string_location: string_location,
+            next_loc: f.stream_position()?,
             bits: buf.to_vec(),
             strings: strings,
         })
@@ -99,10 +119,14 @@ impl Table {
         self.bits[0]
     }
 
+    pub fn size(&self) -> u8 {
+        self.bits[1]
+    }
+
     pub fn handle(&self) -> u16 {
         // FIXME: What's the right way to do this?
         let foo: u16 = self.bits[2].into();
         let l: u16 = self.bits[3].into();
-        foo << 8 | l
+        (l << 8) | foo
     }
 }
