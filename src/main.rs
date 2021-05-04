@@ -101,7 +101,7 @@ fn decode_bios_extension_byte1(data: &Vec<u8>) {
         (1 << 4, "LS-120 SuperDisk boot is supported"),
         (1 << 5, "ATAPI ZIP drive boot is supported"),
         (1 << 6, "1394 boot is supported"),
-        (1 << 7, "Smart batter is supported"),
+        (1 << 7, "Smart battery is supported"),
     ];
     println!("Decoding BIOS Characteristics Extension byte 1:");
     for bit in bit_strings.iter() {
