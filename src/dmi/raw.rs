@@ -16,8 +16,14 @@
 
 use crate::dmi::entrypoint;
 use crate::dmi::err;
+use crate::dmi::table;
 
 pub fn decode_entrypoint() -> Result<entrypoint::Entrypoint, err::DMIParserError> {
     let t = entrypoint::Entrypoint::read()?;
+    Ok(t)
+}
+
+pub fn print_raw_table() -> Result<table::Table, err::DMIParserError> {
+    let t = table::Table::read()?;
     Ok(t)
 }

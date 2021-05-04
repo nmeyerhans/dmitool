@@ -209,6 +209,31 @@ fn print_bios_table(table: &str, data: &Vec<u8>) {
     }
 }
 
+fn do_entrypoint() {
+    println!("Will read from /sys/firmware/dmi/tables/smbios_entry_point");
+    let t = match dmi::raw::decode_entrypoint() {
+        Ok(t) => t,
+        Err(e) => panic!("Unable to read entrypoint: {}", e),
+    };
+    println!("Found a {} entrypoint!", t.version());
+}
+
+fn do_table() {
+    println!("Will read a table from the tables interface");
+    let t = match dmi::raw::print_raw_table() {
+        Ok(t) => t,
+        Err(e) => panic!("Unable to read table: {}", e),
+    };
+    println!(
+        "Got a table with ID 0x{:x} and handle 0x{:04x}",
+        t.id(),
+        t.handle()
+    );
+    for s in t.strings.iter() {
+        println!("Table has string {}", s);
+    }
+}
+
 fn main() {
     let matches = App::new("DMI decoder tool")
         .version("0.1.0")
@@ -221,12 +246,20 @@ fn main() {
                 .help("print table 0"),
         )
         .arg(
-            Arg::with_name("raw")
-                .short("r")
-                .long("raw")
+            Arg::with_name("table")
+                .short("t")
+                .long("table")
                 .takes_value(false)
                 .conflicts_with("zero")
-                .help("read raw entrypoint"),
+                .help("read raw BIOS table"),
+        )
+        .arg(
+            Arg::with_name("entrypoint")
+                .short("e")
+                .long("entrypoint")
+                .takes_value(false)
+                .conflicts_with("zero")
+                .help("read SMBIOS entrypoint"),
         )
         .get_matches();
 
@@ -238,13 +271,10 @@ fn main() {
             Ok(table_data) => print_bios_table(&table, &table_data),
             Err(e) => println!("Reading table {}: {}", table, e),
         }
-    } else if matches.is_present("raw") {
-        println!("Will read from /sys/firmware/dmi/tables/smbios_entry_point");
-        let t = match dmi::raw::decode_entrypoint() {
-            Ok(t) => t,
-            Err(e) => panic!("Unable to read raw table: {}", e),
-        };
-        println!("Got a {} table!", t.version());
+    } else if matches.is_present("entrypoint") {
+        do_entrypoint();
+    } else if matches.is_present("table") {
+        do_table();
     } else {
         print_vendor_data();
         print_product_data();

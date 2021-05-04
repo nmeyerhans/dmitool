@@ -14,7 +14,6 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 // 02110-1301, USA.
 
-use crate::dmi::entrypoint;
 use crate::dmi::err;
 use std::fs::File;
 use std::io;
@@ -25,12 +24,12 @@ const TABLES: &str = "/sys/firmware/dmi/tables/DMI";
 
 #[allow(dead_code)]
 pub struct Table {
-    bits: Vec<u8>,
-    strings: Vec<String>,
+    pub bits: Vec<u8>,
+    pub strings: Vec<String>,
 }
 
 #[allow(dead_code)]
-fn print_header_64(header: &[u8]) -> Result<(), err::DMIParserError> {
+fn print_header_64(_header: &[u8]) -> Result<(), err::DMIParserError> {
     let mut f = File::open(TABLES)?;
     let mut buf = [0; 2];
     f.read(&mut buf)?;
@@ -71,14 +70,16 @@ fn read_null_terminated_string(fh: &File) -> Result<String, io::Error> {
 impl Table {
     pub fn read() -> Result<Table, err::DMIParserError> {
         let mut f = File::open(TABLES)?;
-        let mut buf = [0; 2];
-        f.read(&mut buf)?;
+        let mut buf = [0; 256];
+        // read the header, which gives us the table ID and size
+        f.read_exact(&mut buf[0..3])?;
         println!(" Header bytes 1 and 2 are: {:02x} {:02x}", buf[0], buf[1]);
-        if buf[0] != 0x00 {
-            println!("Skipping table with ID {:02x}", buf[0]);
-            let _pos: u64 = f.seek(SeekFrom::Start(buf[1].into()))?;
-        }
-        let strings: Vec<String> = Vec::new();
+
+        let offset: usize = 4;
+        let end: usize = buf[1].into();
+        f.read(&mut buf[offset..end])?;
+
+        let mut strings: Vec<String> = Vec::new();
         loop {
             let s = match read_null_terminated_string(&f) {
                 Ok(s) => s,
@@ -88,10 +89,22 @@ impl Table {
                 break;
             }
             println!("Read a string! {}", s);
+            strings.push(s);
         }
         Ok(Table {
-            bits: Vec::new(),
+            bits: buf.to_vec(),
             strings: strings,
         })
+    }
+
+    pub fn id(&self) -> u8 {
+        self.bits[0]
+    }
+
+    pub fn handle(&self) -> u16 {
+        // FIXME: What's the right way to do this?
+        let foo: u16 = self.bits[2].into();
+        let l: u16 = self.bits[3].into();
+        foo << 8 | l
     }
 }
