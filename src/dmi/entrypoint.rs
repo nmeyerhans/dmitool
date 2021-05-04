@@ -21,12 +21,14 @@ use std::path::Path;
 use std::str;
 
 const ENTRYPOINT: &str = "/sys/firmware/dmi/tables/smbios_entry_point";
-pub const TABLES: &str = "/sys/firmware/dmi/tables/DMI";
 
+#[allow(dead_code)]
 pub struct Entrypoint {
     major: u8,
     minor: u8,
     rev: u8,
+    length: u8,
+    location: u64,
 }
 
 fn read_entrypoint() -> Result<Vec<u8>, io::Error> {
@@ -70,10 +72,20 @@ impl Entrypoint {
             println!("Unknown entrypoint revision {}", header[0xa]);
             return Err(err::DMIParserError::HeaderDataError);
         }
+        // Is there a more efficient way to do this?
+        let mut bytes: [u8; 8] = [0; 8];
+        for i in 0..8 {
+            bytes[i] = header[0x10 + i];
+        }
+        let table_addr: u64 = u64::from_le_bytes(bytes);
+        println!("Table is at location 0x{:x}", table_addr);
+
         Ok(Entrypoint {
             major: header[7],
             minor: header[8],
             rev: header[9],
+            length: header[6],
+            location: table_addr,
         })
     }
 

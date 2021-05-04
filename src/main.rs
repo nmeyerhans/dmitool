@@ -240,7 +240,7 @@ fn main() {
         }
     } else if matches.is_present("raw") {
         println!("Will read from /sys/firmware/dmi/tables/smbios_entry_point");
-        let t = match dmi::raw::decode_bios_raw_table() {
+        let t = match dmi::raw::decode_entrypoint() {
             Ok(t) => t,
             Err(e) => panic!("Unable to read raw table: {}", e),
         };

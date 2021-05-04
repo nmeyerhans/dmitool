@@ -17,7 +17,7 @@
 use crate::dmi::entrypoint;
 use crate::dmi::err;
 
-pub fn decode_bios_raw_table() -> Result<entrypoint::Entrypoint, err::DMIParserError> {
+pub fn decode_entrypoint() -> Result<entrypoint::Entrypoint, err::DMIParserError> {
     let t = entrypoint::Entrypoint::read()?;
     Ok(t)
 }
