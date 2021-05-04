@@ -73,7 +73,6 @@ impl Table {
         let mut buf = [0; 256];
         // read the header, which gives us the table ID and size
         f.read_exact(&mut buf[0..3])?;
-        println!(" Header bytes 1 and 2 are: {:02x} {:02x}", buf[0], buf[1]);
 
         let offset: usize = 4;
         let end: usize = buf[1].into();
@@ -88,7 +87,6 @@ impl Table {
             if s.len() == 0 {
                 break;
             }
-            println!("Read a string! {}", s);
             strings.push(s);
         }
         Ok(Table {

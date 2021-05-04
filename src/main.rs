@@ -210,7 +210,6 @@ fn print_bios_table(table: &str, data: &Vec<u8>) {
 }
 
 fn do_entrypoint() {
-    println!("Will read from /sys/firmware/dmi/tables/smbios_entry_point");
     let t = match dmi::raw::decode_entrypoint() {
         Ok(t) => t,
         Err(e) => panic!("Unable to read entrypoint: {}", e),
@@ -219,7 +218,6 @@ fn do_entrypoint() {
 }
 
 fn do_table() {
-    println!("Will read a table from the tables interface");
     let t = match dmi::raw::print_raw_table() {
         Ok(t) => t,
         Err(e) => panic!("Unable to read table: {}", e),
