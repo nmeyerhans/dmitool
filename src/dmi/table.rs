@@ -14,31 +14,17 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 // 02110-1301, USA.
 
-use std::fs;
+use crate::dmi::entrypoint;
+use crate::dmi::err;
 use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 use std::io::SeekFrom;
-use std::path::Path;
-use std::str;
-
-use crate::dmi::err;
-
-const ENTRYPOINT: &str = "/sys/firmware/dmi/tables/smbios_entry_point";
-#[allow(dead_code)]
-const TABLES: &str = "/sys/firmware/dmi/tables/DMI";
 
 #[allow(dead_code)]
 pub struct Table {
-    major: u8,
-    minor: u8,
-    rev: u8,
     bits: Vec<u8>,
     strings: Vec<String>,
-}
-
-fn read_entrypoint() -> Result<Vec<u8>, io::Error> {
-    fs::read(Path::new(ENTRYPOINT))
 }
 
 #[allow(dead_code)]
@@ -71,7 +57,7 @@ fn print_header_64(header: &[u8]) -> Result<(), err::DMIParserError> {
     }
     let table_addr: u64 = u64::from_le_bytes(bytes);
     println!("Table is at location 0x{:x}", table_addr);
-    let mut f = File::open(TABLES)?;
+    let mut f = File::open(entrypoint::TABLES)?;
     let mut buf = [0; 2];
     f.read(&mut buf)?;
     println!(" Header bytes 1 and 2 are: {:02x} {:02x}", buf[0], buf[1]);
@@ -108,53 +94,4 @@ fn read_null_terminated_string(fh: &File) -> Result<String, io::Error> {
     Ok(r)
 }
 
-impl Table {
-    pub fn read() -> Result<Table, err::DMIParserError> {
-        let ep: Vec<u8> = match read_entrypoint() {
-            Ok(data) => data,
-            Err(e) => return Err(err::DMIParserError::IOError(e)),
-        };
-        if str::from_utf8(&ep[0..4]).unwrap() == "_SM_" {
-            eprintln!("Found a 32 bit header!");
-            Table::from_header_32(&ep)
-        } else if str::from_utf8(&ep[0..5]).unwrap() == "_SM3_" {
-            println!("Found a 64 bit header!");
-            Table::from_header_64(&ep)
-        } else {
-            Err(err::DMIParserError::HeaderDataError)
-        }
-    }
-
-    fn from_header_32(_header: &[u8]) -> Result<Table, err::DMIParserError> {
-        Err(err::DMIParserError::NotImplemented)
-    }
-
-    fn from_header_64(header: &[u8]) -> Result<Table, err::DMIParserError> {
-        if header[6] != 0x18 {
-            println!("Got unexpected header length");
-            return Err(err::DMIParserError::HeaderDataError);
-        }
-
-        println!(
-            "SMBIOS spec version: {}.{}.{}",
-            header[7], header[8], header[9]
-        );
-        if header[0xa] == 0x1 {
-            println!("Using SMBIOS 3.0 entrypoint");
-        } else {
-            println!("Unknown entrypoint revision {}", header[0xa]);
-            return Err(err::DMIParserError::HeaderDataError);
-        }
-        Ok(Table {
-            major: header[7],
-            minor: header[8],
-            rev: header[9],
-            bits: Vec::new(),
-            strings: Vec::new(),
-        })
-    }
-
-    pub fn version(&self) -> String {
-        format!("{}.{}.{}", self.major, self.minor, self.rev)
-    }
-}
+impl Table {}

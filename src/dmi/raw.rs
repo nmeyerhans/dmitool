@@ -14,10 +14,10 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 // 02110-1301, USA.
 
+use crate::dmi::entrypoint;
 use crate::dmi::err;
-use crate::dmi::table;
 
-pub fn decode_bios_raw_table() -> Result<table::Table, err::DMIParserError> {
-    let t: table::Table = table::Table::read()?;
+pub fn decode_bios_raw_table() -> Result<entrypoint::Entrypoint, err::DMIParserError> {
+    let t = entrypoint::Entrypoint::read()?;
     Ok(t)
 }
