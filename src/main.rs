@@ -105,12 +105,12 @@ fn do_table() {
         Err(e) => panic!("Unable to read table: {}", e),
     };
     println!(
-        "Got a table with ID 0x{:x} and handle 0x{:04x}",
+        "Got a table with ID 0x{:02x} and handle 0x{:04x}",
         t.id(),
         t.handle()
     );
     for s in t.strings.iter() {
-        println!("Table has string {}", s);
+        println!("Table has string [{}]", s);
     }
 }
 
