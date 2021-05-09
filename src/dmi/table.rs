@@ -24,12 +24,25 @@ const TABLES: &str = "/sys/firmware/dmi/tables/DMI";
 
 #[derive(Debug)]
 #[allow(dead_code)]
-pub struct Table {
+struct Data {
     pub location: u64,
     pub string_location: u64,
     pub next_loc: u64,
     pub bits: Vec<u8>,
     pub strings: Vec<String>,
+}
+
+enum TableId {
+    BIOS,
+    System,
+    Baseboard,
+    Chassis,
+    Other,
+}
+
+pub struct Table {
+    id: TableId,
+    data: Data,
 }
 
 #[allow(dead_code)]
@@ -106,27 +119,53 @@ impl Table {
             }
             strings.push(s);
         }
-        Ok(Table {
+        let res = Data {
             location: loc,
             string_location: string_location,
             next_loc: f.stream_position()?,
             bits: buf.to_vec(),
             strings: strings,
-        })
+        };
+        match res.bits[0] {
+            0 => Ok(Table {
+                id: TableId::BIOS,
+                data: res,
+            }),
+            n => Ok(Table {
+                id: TableId::Other,
+                data: res,
+            }),
+        }
     }
 
     pub fn id(&self) -> u8 {
-        self.bits[0]
+        self.data.bits[0]
     }
 
     pub fn size(&self) -> u8 {
-        self.bits[1]
+        self.data.bits[1]
     }
 
     pub fn handle(&self) -> u16 {
         // FIXME: What's the right way to do this?
-        let foo: u16 = self.bits[2].into();
-        let l: u16 = self.bits[3].into();
+        let foo: u16 = self.data.bits[2].into();
+        let l: u16 = self.data.bits[3].into();
         (l << 8) | foo
+    }
+
+    pub fn strings(&self) -> &Vec<String> {
+        &self.data.strings
+    }
+
+    pub fn bits(&self) -> &Vec<u8> {
+        &self.data.bits
+    }
+
+    pub fn location(&self) -> u64 {
+        self.data.location
+    }
+
+    pub fn next_loc(&self) -> u64 {
+        self.data.next_loc
     }
 }

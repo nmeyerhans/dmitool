@@ -109,7 +109,7 @@ fn do_table() {
         t.id(),
         t.handle()
     );
-    for s in t.strings.iter() {
+    for s in t.strings().iter() {
         println!("Table has string [{}]", s);
     }
 }

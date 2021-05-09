@@ -28,20 +28,20 @@ pub fn print_raw_table() -> Result<table::Table, err::DMIParserError> {
     let mut t = table::Table::read()?;
     println!(
         "Read table at position 0, next is at position 0x{:x}",
-        t.next_loc
+        t.next_loc()
     );
 
     for i in 0..20 {
-        t = table::Table::read_at(t.next_loc)?;
+        t = table::Table::read_at(t.next_loc())?;
         println!(
             "Read table at position 0x{:x}, ID 0x{:02x}, Handle 0x{:04x}",
-            t.location,
+            t.location(),
             t.id(),
             t.handle()
         );
         if t.id() == 0 {
             println!("Found table 0!");
-            dmi::decode::print_bios_table("zero", &t.bits);
+            dmi::decode::print_bios_table("zero", &t.bits());
             break;
         }
     }
