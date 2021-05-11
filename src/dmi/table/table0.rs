@@ -19,10 +19,23 @@ use crate::dmi::table::Table;
 use std::fmt;
 
 impl Table {
-    fn fmt_vendor(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let idx: usize = (self.data.bits[3]).into();
-        write!(f, "BIOS Vendor: {}\n", self.data.strings[idx])
+    fn fmt_str(&self, f: &mut fmt::Formatter<'_>, index: u8, label: &str) -> fmt::Result {
+        let idx: usize = (self.data.bits[usize::from(index)] - 1).into();
+        write!(f, "{}: {}\n", label, self.data.strings[idx])
     }
+
+    fn fmt_vendor(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.fmt_str(f, 4, "BIOS Vendor")
+    }
+
+    fn fmt_version(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.fmt_str(f, 5, "BIOS Version")
+    }
+
+    fn fmt_date(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.fmt_str(f, 8, "BIOS Release Date")
+    }
+
     fn decode_bios_extension_byte1(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let b: u8 = self.data.bits[18];
         let bit_strings = [
@@ -132,6 +145,8 @@ impl Table {
             self.decode_bios_extension_byte2(f)?;
         }
         self.fmt_vendor(f)?;
+        self.fmt_version(f)?;
+        self.fmt_date(f)?;
         Ok(())
     }
 }
