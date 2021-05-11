@@ -96,8 +96,12 @@ impl Table {
     }
 
     pub fn read_at(loc: u64) -> Result<Table, err::DMIParserError> {
-        let mut f = File::open(TABLES)?;
-        f.seek(SeekFrom::Start(loc))?;
+        let f = File::open(TABLES)?;
+        Table::read_fh_at(f, loc)
+    }
+
+    pub fn read_fh_at(mut f: File, location: u64) -> Result<Table, err::DMIParserError> {
+        f.seek(SeekFrom::Start(location))?;
         let mut buf = [0; 256];
         // read the header, which gives us the table ID and size
         let _res = f.read(&mut buf[0..4])?;
@@ -126,7 +130,7 @@ impl Table {
             strings.push(s);
         }
         let res = Data {
-            location: loc,
+            location: location,
             string_location: string_location,
             next_loc: f.stream_position()?,
             bits: buf.to_vec(),

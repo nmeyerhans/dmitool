@@ -32,7 +32,7 @@ fn decode_bios_extension_byte1(f: &mut fmt::Formatter<'_>, data: &Vec<u8>) -> fm
     println!("Decoding BIOS Characteristics Extension byte 1:");
     for bit in bit_strings.iter() {
         if (b & bit.0) != 0 {
-            write!(f, "  + {}", bit.1)?;
+            write!(f, "  + {}\n", bit.1)?;
         }
     }
     Ok(())

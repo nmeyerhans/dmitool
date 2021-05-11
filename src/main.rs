@@ -17,6 +17,7 @@
 mod dmi;
 
 use std::fs;
+use std::fs::File;
 use std::io;
 use std::path::PathBuf;
 
@@ -31,11 +32,11 @@ fn get_dmi_key(key: &str) -> Result<String, io::Error> {
     Ok(r)
 }
 
-fn read_table(id: &str) -> Result<Vec<u8>, io::Error> {
+fn read_table(id: &str) -> Result<dmi::table::Table, dmi::err::DMIParserError> {
     let root: PathBuf = [DMI_ENTRIES_ROOT, id].iter().collect();
     let rawpath: PathBuf = root.join("raw");
     println!("Reading table from {}", rawpath.as_path().to_str().unwrap());
-    fs::read(rawpath.as_path())
+    dmi::table::Table::read_fh_at(File::open(rawpath.as_path())?, 0)
 }
 
 fn print_dmi_id_fields(dmi_info_name_keys: &[(&str, &str)]) {
@@ -148,9 +149,7 @@ fn main() {
         let table = "0-0";
         let res = read_table(&table);
         match res {
-            // Ok(table_data) => dmi::decode::print_bios_table(&table, &table_data),
-            //Ok(table_data) => println!("Table {}\n{}", &table, &table_data),
-            Ok(_) => println!("Skipping this for now"),
+            Ok(t) => println!("Table {}\n{}", &table, &t),
             Err(e) => println!("Reading table {}: {}", table, e),
         }
     } else if matches.is_present("entrypoint") {
