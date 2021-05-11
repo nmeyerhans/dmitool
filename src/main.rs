@@ -152,7 +152,7 @@ fn main() {
 
     let env = Env::default()
         .filter_or("LOG_LEVEL", "info")
-        .write_style_or("LOG_STYLE", "always");
+        .write_style_or("LOG_STYLE", "never");
 
     env_logger::init_from_env(env);
 
