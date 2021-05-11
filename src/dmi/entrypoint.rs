@@ -42,10 +42,10 @@ impl Entrypoint {
             Err(e) => return Err(err::DMIParserError::IOError(e)),
         };
         if str::from_utf8(&ep[0..4]).unwrap() == "_SM_" {
-            eprintln!("Found a 32 bit header!");
+            debug!("Found a 32 bit header!");
             Entrypoint::from_header_32(&ep)
         } else if str::from_utf8(&ep[0..5]).unwrap() == "_SM3_" {
-            println!("Found a 64 bit header!");
+            debug!("Found a 64 bit header!");
             Entrypoint::from_header_64(&ep)
         } else {
             Err(err::DMIParserError::HeaderDataError)
@@ -58,18 +58,18 @@ impl Entrypoint {
 
     fn from_header_64(header: &[u8]) -> Result<Entrypoint, err::DMIParserError> {
         if header[6] != 0x18 {
-            println!("Got unexpected header length");
+            error!("Got unexpected header length");
             return Err(err::DMIParserError::HeaderDataError);
         }
 
-        println!(
+        info!(
             "SMBIOS spec version: {}.{}.{}",
             header[7], header[8], header[9]
         );
         if header[0xa] == 0x1 {
-            println!("Using SMBIOS 3.0 entrypoint");
+            info!("Using SMBIOS 3.0 entrypoint");
         } else {
-            println!("Unknown entrypoint revision {}", header[0xa]);
+            error!("Unknown entrypoint revision {}", header[0xa]);
             return Err(err::DMIParserError::HeaderDataError);
         }
         // Is there a more efficient way to do this?
@@ -78,7 +78,7 @@ impl Entrypoint {
             bytes[i] = header[0x10 + i];
         }
         let table_addr: u64 = u64::from_le_bytes(bytes);
-        println!("Table is at location 0x{:x}", table_addr);
+        info!("Table is at location 0x{:x}", table_addr);
 
         Ok(Entrypoint {
             major: header[7],

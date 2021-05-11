@@ -69,7 +69,7 @@ fn print_header_64(_header: &[u8]) -> Result<(), err::DMIParserError> {
         if s.len() == 0 {
             break;
         }
-        println!("Read a string! {}", s);
+        debug!("Read a string! {}", s);
     }
     Ok(())
 }

@@ -9,3 +9,5 @@ license = "GPL-2.0-only"
 
 [dependencies]
 clap = "2.33"
+log = "0.4"
+env_logger = "0.8"

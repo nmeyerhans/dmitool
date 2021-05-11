@@ -25,21 +25,21 @@ pub fn decode_entrypoint() -> Result<entrypoint::Entrypoint, err::DMIParserError
 
 pub fn read_raw_table(id: u8) -> Result<table::Table, err::DMIParserError> {
     let mut t = table::Table::read()?;
-    println!(
+    debug!(
         "Read table at position 0, next is at position 0x{:x}",
         t.next_loc()
     );
 
     for _i in 0..20 {
         t = table::Table::read_at(t.next_loc())?;
-        println!(
+        debug!(
             "Read table at position 0x{:x}, ID 0x{:02x}, Handle 0x{:04x}",
             t.location(),
             t.id(),
             t.handle()
         );
         if t.id() == id {
-            println!("Found table {}!", id);
+            debug!("Found table {}!", id);
             //dmi::decode::print_bios_table("zero", &t.bits());
             print!("Table data:\n{}", &t);
             break;

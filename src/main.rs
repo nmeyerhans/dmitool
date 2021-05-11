@@ -21,6 +21,11 @@ use std::fs::File;
 use std::io;
 use std::path::PathBuf;
 
+#[macro_use]
+extern crate log;
+
+use env_logger::Env;
+
 use clap::{App, Arg};
 
 const DMI_ID_ROOT: &str = "/sys/class/dmi/id";
@@ -35,7 +40,7 @@ fn get_dmi_key(key: &str) -> Result<String, io::Error> {
 fn read_table(id: &str) -> Result<dmi::table::Table, dmi::err::DMIParserError> {
     let root: PathBuf = [DMI_ENTRIES_ROOT, id].iter().collect();
     let rawpath: PathBuf = root.join("raw");
-    println!("Reading table from {}", rawpath.as_path().to_str().unwrap());
+    debug!("Reading table from {}", rawpath.as_path().to_str().unwrap());
     dmi::table::Table::read_fh_at(File::open(rawpath.as_path())?, 0)
 }
 
@@ -45,7 +50,7 @@ fn print_dmi_id_fields(dmi_info_name_keys: &[(&str, &str)]) {
         let data = get_dmi_key(&sysfs_key);
         match data {
             Ok(data) => println!("  - {} is {}", dmi_name_key.0, data),
-            Err(e) => println!("  * Error reading {}: {}", dmi_name_key.0, e),
+            Err(e) => panic!("  * Error reading {}: {}", dmi_name_key.0, e),
         };
     }
 }
@@ -57,13 +62,13 @@ fn print_vendor_data() {
         ("Chassis", "chassis_vendor"),
         ("Board", "board_vendor"),
     ];
-    println!("Vendor information:");
+    info!("Vendor information:");
     print_dmi_id_fields(&dmi_info_name_keys);
 }
 
 fn print_system_data() {
     let keys = [("Vendor", "sys_vendor")];
-    println!("System data:");
+    info!("System data:");
     print_dmi_id_fields(&keys);
 }
 
@@ -77,7 +82,7 @@ fn print_product_data() {
         ("Version", "product_version"),
     ];
 
-    println!("Product information:");
+    info!("Product information:");
     print_dmi_id_fields(&dmi_info_name_keys);
 }
 
@@ -88,7 +93,7 @@ fn print_bios_data() {
         ("Vendor", "bios_vendor"),
         ("Version", "bios_version"),
     ];
-    println!("BIOS Information");
+    info!("BIOS Information");
     print_dmi_id_fields(&keys);
 }
 
@@ -97,7 +102,7 @@ fn do_entrypoint() {
         Ok(t) => t,
         Err(e) => panic!("Unable to read entrypoint: {}", e),
     };
-    println!("Found a {} entrypoint!", t.version());
+    info!("Found a {} entrypoint!", t.version());
 }
 
 fn do_table(id: u8) {
@@ -105,13 +110,13 @@ fn do_table(id: u8) {
         Ok(t) => t,
         Err(e) => panic!("Unable to read table: {}", e),
     };
-    println!(
+    debug!(
         "Got a table with ID 0x{:02x} and handle 0x{:04x}",
         t.id(),
         t.handle()
     );
     for s in t.strings().iter() {
-        println!("Table has string [{}]", s);
+        debug!("Table has string [{}]", s);
     }
 }
 
@@ -145,13 +150,19 @@ fn main() {
         )
         .get_matches();
 
+    let env = Env::default()
+        .filter_or("LOG_LEVEL", "info")
+        .write_style_or("LOG_STYLE", "always");
+
+    env_logger::init_from_env(env);
+
     if matches.is_present("zero") {
-        println!("Getting table zero");
+        info!("Getting table zero");
         let table = "0-0";
         let res = read_table(&table);
         match res {
             Ok(t) => print!("Table {}\n{}", &table, &t),
-            Err(e) => println!("Reading table {}: {}", table, e),
+            Err(e) => panic!("Reading table {}: {}", table, e),
         }
     } else if matches.is_present("entrypoint") {
         do_entrypoint();
