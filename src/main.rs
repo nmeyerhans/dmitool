@@ -129,7 +129,7 @@ fn main() {
             Arg::with_name("zero")
                 .short("0")
                 .takes_value(false)
-                .help("print table 0"),
+                .help("print table 0 via the /sys/firmware/dmi/entries interface"),
         )
         .arg(
             Arg::with_name("table")
@@ -138,7 +138,7 @@ fn main() {
                 .takes_value(true)
                 .value_name("TABLE")
                 .conflicts_with("zero")
-                .help("read the given BIOS table"),
+                .help("print the given table via the /sys/firmware/dmi/tables"),
         )
         .arg(
             Arg::with_name("entrypoint")
