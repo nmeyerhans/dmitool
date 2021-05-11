@@ -22,9 +22,36 @@ firmware as exposed by Linux via the /sys/class/dmi/id and
         -V, --version       Prints version information
         -0                  print table 0
 
+Example usage (from a ThinkPad):
+
+    $ sudo ./target/debug/dmitool -0
+    Getting table zero
+    Reading table from /sys/firmware/dmi/entries/0-0/raw
+    Table 0-0
+    BIOS Characteristics
+      + PCI is supported
+      + PnP is supported
+      + BIOS upgrades are supported
+      + BIOS shadowing is allowed
+      + Boot from CD is supported
+      + Selectable boot is supported
+      + EDD Specification is supported
+      + Int 13h: 3.5” / 720 KB floppy services are supported
+      + Int 5h: print screen Service is supported
+      + Int 9h: 8042 keyboard services are supported
+      + Int 14h: serial services are supported
+      + Int 17h: printer services are supported
+      + Int 10h: CGA/Mono Video Services are supported
+    BIOS Characteristics Extension byte 1:
+      + ACPI is supported
+      + USB Legacy is supported
+    BIOS Characteristics Extension byte 2:
+      + BIOS Boot Specification is supported
+      + Enable targeted content distribution
+      + UEFI Specification is supported
+
 This project is mostly an excuse for me to write Rust code while
 digging in to the SMBIOS structures.  You probably don't want to use
 this.  [dmidecode](https://nongnu.org/dmidecode/) is a much more
 complete and mature DMI decoder and you should probably be using it if
-you actully need to dig in to your system's firmware.
-
+you actully need to inspect your system's firmware.
