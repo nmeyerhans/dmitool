@@ -23,7 +23,7 @@ pub fn decode_entrypoint() -> Result<entrypoint::Entrypoint, err::DMIParserError
     Ok(t)
 }
 
-pub fn print_raw_table() -> Result<table::Table, err::DMIParserError> {
+pub fn read_raw_table(id: u8) -> Result<table::Table, err::DMIParserError> {
     let mut t = table::Table::read()?;
     println!(
         "Read table at position 0, next is at position 0x{:x}",
@@ -38,8 +38,8 @@ pub fn print_raw_table() -> Result<table::Table, err::DMIParserError> {
             t.id(),
             t.handle()
         );
-        if t.id() == 0 {
-            println!("Found table 0!");
+        if t.id() == id {
+            println!("Found table {}!", id);
             //dmi::decode::print_bios_table("zero", &t.bits());
             print!("Table data:\n{}", &t);
             break;

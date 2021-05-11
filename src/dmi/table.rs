@@ -197,7 +197,7 @@ fn fmt_unknown_table(f: &mut fmt::Formatter<'_>, data: &Vec<u8>) -> fmt::Result 
 impl fmt::Display for Table {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.data.bits[0] {
-            0 => table0::fmt(f, &self.data.bits),
+            0 => self.fmt(f),
             _ => fmt_unknown_table(f, &self.data.bits),
         }
     }

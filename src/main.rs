@@ -100,8 +100,8 @@ fn do_entrypoint() {
     println!("Found a {} entrypoint!", t.version());
 }
 
-fn do_table() {
-    let t = match dmi::raw::print_raw_table() {
+fn do_table(id: u8) {
+    let t = match dmi::raw::read_raw_table(id) {
         Ok(t) => t,
         Err(e) => panic!("Unable to read table: {}", e),
     };
@@ -130,9 +130,10 @@ fn main() {
             Arg::with_name("table")
                 .short("t")
                 .long("table")
-                .takes_value(false)
+                .takes_value(true)
+                .value_name("TABLE")
                 .conflicts_with("zero")
-                .help("read raw BIOS table"),
+                .help("read the given BIOS table"),
         )
         .arg(
             Arg::with_name("entrypoint")
@@ -155,7 +156,11 @@ fn main() {
     } else if matches.is_present("entrypoint") {
         do_entrypoint();
     } else if matches.is_present("table") {
-        do_table();
+        let table_id: u8 = match matches.value_of("table").unwrap().parse() {
+            Ok(t) => t,
+            Err(_e) => panic!("unable to parse table ID"),
+        };
+        do_table(table_id);
     } else {
         print_vendor_data();
         print_product_data();
