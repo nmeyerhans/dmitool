@@ -148,7 +148,9 @@ fn main() {
         let table = "0-0";
         let res = read_table(&table);
         match res {
-            Ok(table_data) => dmi::decode::print_bios_table(&table, &table_data),
+            // Ok(table_data) => dmi::decode::print_bios_table(&table, &table_data),
+            //Ok(table_data) => println!("Table {}\n{}", &table, &table_data),
+            Ok(_) => println!("Skipping this for now"),
             Err(e) => println!("Reading table {}: {}", table, e),
         }
     } else if matches.is_present("entrypoint") {

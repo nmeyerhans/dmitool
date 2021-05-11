@@ -1,4 +1,23 @@
-fn decode_bios_extension_byte1(data: &Vec<u8>) {
+// Copyright Noah Meyerhans <frodo@morgul.net>
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation; version 2.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+// 02110-1301, USA.
+
+use crate::dmi::table::decode_byte;
+use std::fmt;
+
+fn decode_bios_extension_byte1(f: &mut fmt::Formatter<'_>, data: &Vec<u8>) -> fmt::Result {
     let b: u8 = data[18];
     let bit_strings = [
         (1, "ACPI is supported"),
@@ -13,12 +32,13 @@ fn decode_bios_extension_byte1(data: &Vec<u8>) {
     println!("Decoding BIOS Characteristics Extension byte 1:");
     for bit in bit_strings.iter() {
         if (b & bit.0) != 0 {
-            println!("  + {}", bit.1);
+            write!(f, "  + {}", bit.1)?;
         }
     }
+    Ok(())
 }
 
-fn decode_bios_extension_byte2(data: &Vec<u8>) {
+fn decode_bios_extension_byte2(f: &mut fmt::Formatter<'_>, data: &Vec<u8>) -> fmt::Result {
     let b: u8 = data[19];
     let bit_strings = [
         (1, "BIOS Boot Specification is supported"),
@@ -31,35 +51,23 @@ fn decode_bios_extension_byte2(data: &Vec<u8>) {
     println!("Decoding BIOS Characteristics Extension byte 2:");
     for bit in bit_strings.iter() {
         if (b & bit.0) != 0 {
-            println!("  + {}", bit.1);
+            write!(f, "  + {}\n", bit.1)?;
         }
     }
+    Ok(())
 }
 
-fn decode_byte(b: u8, bit_strings: &[(u8, &str)]) {
-    for bit in bit_strings.iter() {
-        if (b & bit.0) != 0 {
-            println!("  + {}", bit.1);
-        }
-    }
-}
-
-pub fn print_bios_table(table: &str, data: &Vec<u8>) {
-    println!("Printing table {}", table);
-    if data[0] != 0 {
-        println!("Invalid byte 0 in BIOS characteristics table!");
-        return;
-    }
+pub fn fmt(f: &mut fmt::Formatter<'_>, data: &Vec<u8>) -> fmt::Result {
     let len: u8 = data[1];
     if len < 0x12 {
-        println!("Invalid BIOS characteristics table length {}", len);
-        return;
+        write!(f, "Invalid BIOS characteristics table length {}", len)?;
+        return Err(std::fmt::Error);
     }
     let pos = 0xa;
     if data[pos] & (1 << 3) != 0 {
         // Does "BIOS Characteristics are not supported" really mean we should skip this table?
-        println!("BIOS Characteristics not supported on this system");
-        return;
+        write!(f, "BIOS Characteristics not supported on this system")?;
+        return Err(std::fmt::Error);
     }
     let bit_strings = [
         (1 << 4, "ISA is supported"),
@@ -67,7 +75,7 @@ pub fn print_bios_table(table: &str, data: &Vec<u8>) {
         (1 << 6, "EISA is supported"),
         (1 << 7, "PCI is supported"),
     ];
-    decode_byte(data[pos], &bit_strings);
+    decode_byte(f, data[pos], &bit_strings)?;
     let pos = pos + 1;
     let bit_strings = [
         (1, "PCMCI is supported"),
@@ -79,7 +87,7 @@ pub fn print_bios_table(table: &str, data: &Vec<u8>) {
         (1 << 6, "ESCD support is available"),
         (1 << 7, "Boot from CD is supported"),
     ];
-    decode_byte(data[pos], &bit_strings);
+    decode_byte(f, data[pos], &bit_strings)?;
     let pos = pos + 1;
     let bit_strings = [
         (1, "Selectable boot is supported"),
@@ -91,7 +99,7 @@ pub fn print_bios_table(table: &str, data: &Vec<u8>) {
         (1 << 6, "Int 13h: 5.25” 360 KB floppy is supportd"),
         (1 << 7, "Int 13h: 5.25” 1.2 MB floppy is supported"),
     ];
-    decode_byte(data[pos], &bit_strings);
+    decode_byte(f, data[pos], &bit_strings)?;
     let pos = pos + 1;
     let bit_strings = [
         (1, "Int 13h: 3.5” / 720 KB floppy services are supported"),
@@ -106,12 +114,13 @@ pub fn print_bios_table(table: &str, data: &Vec<u8>) {
         (1 << 6, "Int 10h: CGA/Mono Video Services are supported"),
         (1 << 7, "NEC PC-98"),
     ];
-    decode_byte(data[pos], &bit_strings);
+    decode_byte(f, data[pos], &bit_strings)?;
 
     if len > 19 {
-        decode_bios_extension_byte1(data);
+        decode_bios_extension_byte1(f, &data)?;
     }
     if len > 20 {
-        decode_bios_extension_byte2(data);
+        decode_bios_extension_byte2(f, &data)?;
     }
+    Ok(())
 }

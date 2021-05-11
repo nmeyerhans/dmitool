@@ -15,10 +15,13 @@
 // 02110-1301, USA.
 
 use crate::dmi::err;
+use std::fmt;
 use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 use std::io::SeekFrom;
+
+mod table0;
 
 const TABLES: &str = "/sys/firmware/dmi/tables/DMI";
 
@@ -32,6 +35,7 @@ struct Data {
     pub strings: Vec<String>,
 }
 
+#[allow(dead_code)]
 enum TableId {
     BIOS,
     System,
@@ -40,6 +44,7 @@ enum TableId {
     Other,
 }
 
+#[allow(dead_code)]
 pub struct Table {
     id: TableId,
     data: Data,
@@ -84,6 +89,7 @@ fn read_null_terminated_string(fh: &File) -> Result<String, io::Error> {
     Ok(r)
 }
 
+#[allow(dead_code)]
 impl Table {
     pub fn read() -> Result<Table, err::DMIParserError> {
         Table::read_at(0)
@@ -94,11 +100,11 @@ impl Table {
         f.seek(SeekFrom::Start(loc))?;
         let mut buf = [0; 256];
         // read the header, which gives us the table ID and size
-        let res = f.read(&mut buf[0..4])?;
+        let _res = f.read(&mut buf[0..4])?;
 
         let offset: usize = 4;
         let end: usize = (buf[1]).into();
-        let res = f.read(&mut buf[offset..end])?;
+        let _res = f.read(&mut buf[offset..end])?;
 
         let string_location = f.stream_position()?;
         let mut strings: Vec<String> = Vec::new();
@@ -131,7 +137,7 @@ impl Table {
                 id: TableId::BIOS,
                 data: res,
             }),
-            n => Ok(Table {
+            _ => Ok(Table {
                 id: TableId::Other,
                 data: res,
             }),
@@ -142,6 +148,7 @@ impl Table {
         self.data.bits[0]
     }
 
+    #[allow(dead_code)]
     pub fn size(&self) -> u8 {
         self.data.bits[1]
     }
@@ -167,5 +174,27 @@ impl Table {
 
     pub fn next_loc(&self) -> u64 {
         self.data.next_loc
+    }
+}
+
+fn decode_byte(f: &mut fmt::Formatter<'_>, b: u8, bit_strings: &[(u8, &str)]) -> fmt::Result {
+    for bit in bit_strings.iter() {
+        if (b & bit.0) != 0 {
+            write!(f, "  + {}\n", bit.1)?;
+        }
+    }
+    Ok(())
+}
+
+fn fmt_unknown_table(f: &mut fmt::Formatter<'_>, data: &Vec<u8>) -> fmt::Result {
+    write!(f, "Unhandled table {}\n", data[0])
+}
+
+impl fmt::Display for Table {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.data.bits[0] {
+            0 => table0::fmt(f, &self.data.bits),
+            _ => fmt_unknown_table(f, &self.data.bits),
+        }
     }
 }
