@@ -149,7 +149,7 @@ fn main() {
         let table = "0-0";
         let res = read_table(&table);
         match res {
-            Ok(t) => println!("Table {}\n{}", &table, &t),
+            Ok(t) => print!("Table {}\n{}", &table, &t),
             Err(e) => println!("Reading table {}: {}", table, e),
         }
     } else if matches.is_present("entrypoint") {

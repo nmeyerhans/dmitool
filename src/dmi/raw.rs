@@ -41,7 +41,7 @@ pub fn print_raw_table() -> Result<table::Table, err::DMIParserError> {
         if t.id() == 0 {
             println!("Found table 0!");
             //dmi::decode::print_bios_table("zero", &t.bits());
-            println!("Table data:\n{}", &t);
+            print!("Table data:\n{}", &t);
             break;
         }
     }

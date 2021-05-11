@@ -29,7 +29,7 @@ fn decode_bios_extension_byte1(f: &mut fmt::Formatter<'_>, data: &Vec<u8>) -> fm
         (1 << 6, "1394 boot is supported"),
         (1 << 7, "Smart battery is supported"),
     ];
-    println!("Decoding BIOS Characteristics Extension byte 1:");
+    println!("BIOS Characteristics Extension byte 1:");
     for bit in bit_strings.iter() {
         if (b & bit.0) != 0 {
             write!(f, "  + {}\n", bit.1)?;
@@ -48,7 +48,7 @@ fn decode_bios_extension_byte2(f: &mut fmt::Formatter<'_>, data: &Vec<u8>) -> fm
         (1 << 4, "SMBIOS table describes a virtual machine"),
         /* Remaining bits are reserved for future use */
     ];
-    println!("Decoding BIOS Characteristics Extension byte 2:");
+    println!("BIOS Characteristics Extension byte 2:");
     for bit in bit_strings.iter() {
         if (b & bit.0) != 0 {
             write!(f, "  + {}\n", bit.1)?;
@@ -69,6 +69,7 @@ pub fn fmt(f: &mut fmt::Formatter<'_>, data: &Vec<u8>) -> fmt::Result {
         write!(f, "BIOS Characteristics not supported on this system")?;
         return Err(std::fmt::Error);
     }
+    write!(f, "BIOS Characteristics\n")?;
     let bit_strings = [
         (1 << 4, "ISA is supported"),
         (1 << 5, "MCA is supported"),
