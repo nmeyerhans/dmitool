@@ -55,9 +55,9 @@ fn print_header_64(_header: &[u8]) -> Result<(), err::DMIParserError> {
     let mut f = File::open(TABLES)?;
     let mut buf = [0; 2];
     f.read(&mut buf)?;
-    println!(" Header bytes 1 and 2 are: {:02x} {:02x}", buf[0], buf[1]);
+    debug!(" Header bytes 1 and 2 are: {:02x} {:02x}", buf[0], buf[1]);
     if buf[0] != 0x00 {
-        println!("Skipping table with ID {:02x}", buf[0]);
+        debug!("Skipping table with ID {:02x}", buf[0]);
         let _pos: u64 = f.seek(SeekFrom::Start(buf[1].into()))?;
     }
     loop {
@@ -105,10 +105,30 @@ impl Table {
         let mut buf = [0; 256];
         // read the header, which gives us the table ID and size
         let _res = f.read(&mut buf[0..4])?;
-
+        if buf[0] == 0 {
+            debug!(
+                "Read header bytes: {:02x} {:02x} {:02x} {:02x}",
+                buf[0], buf[1], buf[2], buf[3]
+            );
+        }
         let offset: usize = 4;
         let end: usize = (buf[1]).into();
         let _res = f.read(&mut buf[offset..end])?;
+        if buf[0] == 0 {
+            for byte in 0..1 {
+                debug!(
+                    "Read header bytes: {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}",
+                    buf[byte + 0],
+                    buf[byte + 1],
+                    buf[byte + 2],
+                    buf[byte + 3],
+                    buf[byte + 4],
+                    buf[byte + 5],
+                    buf[byte + 6],
+                    buf[byte + 7],
+                );
+            }
+        }
 
         let string_location = f.stream_position()?;
         let mut strings: Vec<String> = Vec::new();
@@ -116,10 +136,11 @@ impl Table {
             let s = match read_null_terminated_string(&f) {
                 Ok(s) => s,
                 Err(e) => {
-                    eprintln!("While reading strings: {}", e);
+                    error!("While reading strings: {}", e);
                     break;
                 }
             };
+            debug!("Read string {}", s);
             if s.is_empty() {
                 if strings.len() == 0 {
                     // special case: this table structure has no strings
