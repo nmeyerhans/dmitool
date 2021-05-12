@@ -71,7 +71,7 @@ impl Table {
         Ok(())
     }
 
-    pub fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    pub fn fmt_table0(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let len: u8 = self.data.bits[1];
         if len < 0x12 {
             write!(f, "Invalid BIOS characteristics table length {}", len)?;

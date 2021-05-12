@@ -22,6 +22,7 @@ use std::io::prelude::*;
 use std::io::SeekFrom;
 
 mod table0;
+mod table1;
 
 const TABLES: &str = "/sys/firmware/dmi/tables/DMI";
 
@@ -162,6 +163,10 @@ impl Table {
                 id: TableId::BIOS,
                 data: res,
             }),
+            1 => Ok(Table {
+                id: TableId::System,
+                data: res,
+            }),
             _ => Ok(Table {
                 id: TableId::Other,
                 data: res,
@@ -222,8 +227,9 @@ fn fmt_unknown_table(f: &mut fmt::Formatter<'_>, data: &Vec<u8>) -> fmt::Result 
 
 impl fmt::Display for Table {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self.data.bits[0] {
-            0 => self.fmt(f),
+        match &self.id {
+            TableId::BIOS => self.fmt_table0(f),
+            TableId::System => self.fmt_table1(f),
             _ => fmt_unknown_table(f, &self.data.bits),
         }
     }
