@@ -19,11 +19,6 @@ use crate::dmi::table::Table;
 use std::fmt;
 
 impl Table {
-    fn fmt_str(&self, f: &mut fmt::Formatter<'_>, index: u8, label: &str) -> fmt::Result {
-        let idx: usize = (self.data.bits[usize::from(index)] - 1).into();
-        write!(f, "{}: {}\n", label, self.data.strings[idx])
-    }
-
     fn fmt_vendor(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.fmt_str(f, 4, "BIOS Vendor")
     }

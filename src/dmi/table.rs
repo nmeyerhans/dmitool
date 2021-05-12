@@ -200,6 +200,11 @@ impl Table {
     pub fn next_loc(&self) -> u64 {
         self.data.next_loc
     }
+
+    fn fmt_str(&self, f: &mut fmt::Formatter<'_>, index: u8, label: &str) -> fmt::Result {
+        let idx: usize = (self.data.bits[usize::from(index)] - 1).into();
+        write!(f, "{}: {}\n", label, self.data.strings[idx])
+    }
 }
 
 fn decode_byte(f: &mut fmt::Formatter<'_>, b: u8, bit_strings: &[(u8, &str)]) -> fmt::Result {
