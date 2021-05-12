@@ -29,6 +29,7 @@ pub struct Entrypoint {
     rev: u8,
     length: u8,
     location: u64,
+    structure_max_size: u32,
 }
 
 fn read_entrypoint() -> Result<Vec<u8>, io::Error> {
@@ -80,16 +81,27 @@ impl Entrypoint {
         let table_addr: u64 = u64::from_le_bytes(bytes);
         info!("Table is at location 0x{:x}", table_addr);
 
+        let mut bytes: [u8; 4] = [0; 4];
+        for i in 0..4 {
+            bytes[i] = header[0xc + i];
+        }
+        let structure_max_size: u32 = u32::from_le_bytes(bytes);
+        debug!("Table structrure max size is 0x{:04x}", structure_max_size);
+
         Ok(Entrypoint {
             major: header[7],
             minor: header[8],
             rev: header[9],
             length: header[6],
             location: table_addr,
+            structure_max_size,
         })
     }
 
     pub fn version(&self) -> String {
         format!("{}.{}.{}", self.major, self.minor, self.rev)
+    }
+    pub fn structure_max_size(&self) -> u32 {
+        self.structure_max_size
     }
 }

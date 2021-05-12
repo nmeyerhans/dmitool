@@ -106,7 +106,11 @@ fn do_entrypoint() {
 }
 
 fn do_table(id: u8) {
-    let t = match dmi::raw::read_raw_table(id) {
+    let entrypoint = match dmi::entrypoint::Entrypoint::read() {
+        Ok(t) => t,
+        Err(e) => panic!("Unable to read entrypont: {}", e),
+    };
+    let t = match dmi::raw::read_raw_table(id, entrypoint) {
         Ok(t) => t,
         Err(e) => panic!("Unable to read table: {}", e),
     };
