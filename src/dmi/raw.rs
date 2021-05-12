@@ -29,17 +29,8 @@ pub fn read_raw_table(
 ) -> Result<table::Table, err::DMIParserError> {
     let table_size = entrypoint.structure_max_size();
     let mut t = table::Table::read()?;
-    debug!(
-        "Read table at position 0, next is at position 0x{:x}",
-        t.next_loc()
-    );
 
     for _i in 0..1000 {
-        if t.next_loc() > table_size.into() {
-            warn!("Reached end of table");
-            break;
-        }
-        t = table::Table::read_at(t.next_loc())?;
         debug!(
             "Read table at position 0x{:x}, ID 0x{:02x}, Handle 0x{:04x}, Size 0x{:04x}",
             t.location(),
@@ -53,10 +44,14 @@ pub fn read_raw_table(
         }
         if t.id() == id {
             debug!("Found table {}!", id);
-            //dmi::decode::print_bios_table("zero", &t.bits());
             print!("Table data:\n{}", &t);
             break;
         }
+        if t.next_loc() > table_size.into() {
+            warn!("Reached end of table");
+            break;
+        }
+        t = table::Table::read_at(t.next_loc())?;
     }
     Ok(t)
 }
