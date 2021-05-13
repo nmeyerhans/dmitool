@@ -22,13 +22,18 @@ use std::str;
 
 const ENTRYPOINT: &str = "/sys/firmware/dmi/tables/smbios_entry_point";
 
+enum TableLocation {
+    Loc32(u32),
+    Loc64(u64),
+}
+
 #[allow(dead_code)]
 pub struct Entrypoint {
     major: u8,
     minor: u8,
     rev: u8,
     length: u8,
-    location: u64,
+    location: TableLocation,
     structure_max_size: u32,
 }
 
@@ -53,8 +58,54 @@ impl Entrypoint {
         }
     }
 
-    fn from_header_32(_header: &[u8]) -> Result<Entrypoint, err::DMIParserError> {
-        Err(err::DMIParserError::NotImplemented)
+    fn from_header_32(header: &[u8]) -> Result<Entrypoint, err::DMIParserError> {
+        if header[5] != 0x1f {
+            error!("Got unexpected header length");
+            return Err(err::DMIParserError::HeaderDataError);
+        }
+        info!(
+            "SMBIOS spec version: {}.{}.{}",
+            header[6], header[7], header[8]
+        );
+        if header[0xa] == 0 {
+            info!("Using SMBIOS 2.1 entrypoint");
+        } else {
+            error!("Unsupported entrypoint revision {}", header[0xa]);
+            return Err(err::DMIParserError::HeaderDataError);
+        }
+
+        let mut bytes: [u8; 4] = [0; 4];
+        for i in 0..4 {
+            bytes[i] = header[0x18 + i];
+        }
+        let table_addr: u32 = u32::from_le_bytes(bytes);
+
+        let mut bytes: [u8; 2] = [0; 2];
+        for i in 0..2 {
+            bytes[i] = header[0x16 + i];
+        }
+        let table_len = u16::from_le_bytes(bytes);
+
+        debug!(
+            "Structure table is at 0x{:04x}, lenght 0x{:02x}",
+            table_addr, table_len
+        );
+
+        let mut bytes: [u8; 2] = [0; 2];
+        for i in 0..2 {
+            bytes[i] = header[0x8 + i];
+        }
+        let structure_max_size = u16::from_le_bytes(bytes);
+
+        error!("32 bit entrypoint (SMBIOS 2.1) support not implemented!");
+        Ok(Entrypoint {
+            major: header[6],
+            minor: header[7],
+            rev: header[8],
+            length: header[5],
+            location: TableLocation::Loc32(table_addr),
+            structure_max_size: structure_max_size.into(),
+        })
     }
 
     fn from_header_64(header: &[u8]) -> Result<Entrypoint, err::DMIParserError> {
@@ -93,7 +144,7 @@ impl Entrypoint {
             minor: header[8],
             rev: header[9],
             length: header[6],
-            location: table_addr,
+            location: TableLocation::Loc64(table_addr),
             structure_max_size,
         })
     }
