@@ -50,7 +50,21 @@ impl Table {
             self.fmt_sku(f)?;
             self.fmt_family(f)?;
         }
-        // TODO: decode the system UUID and wake-up timer byte
+        let byte_values = [
+            (0, "Reserved"),
+            (1, "Other"),
+            (2, "Unknown"),
+            (3, "APM Timer"),
+            (4, "Modem ring"),
+            (5, "LAN Remote"),
+            (6, "Power switch"),
+            (7, "PCI PME#"),
+            (8, "AC Power Restored"),
+        ];
+        let idx: usize = self.data.bits[0x18].into();
+        write!(f, "  + {}\n", byte_values[idx].1)?;
+
+        // TODO: decode the system UUID
         Ok(())
     }
 }
