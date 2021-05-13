@@ -23,6 +23,7 @@ use std::io::SeekFrom;
 
 mod table0;
 mod table1;
+mod table2;
 
 const TABLES: &str = "/sys/firmware/dmi/tables/DMI";
 
@@ -167,6 +168,14 @@ impl Table {
                 id: TableId::System,
                 data: res,
             }),
+            2 => Ok(Table {
+                id: TableId::Baseboard,
+                data: res,
+            }),
+            3 => Ok(Table {
+                id: TableId::Chassis,
+                data: res,
+            }),
             _ => Ok(Table {
                 id: TableId::Other,
                 data: res,
@@ -230,6 +239,7 @@ impl fmt::Display for Table {
         match &self.id {
             TableId::BIOS => self.fmt_table0(f),
             TableId::System => self.fmt_table1(f),
+            TableId::Baseboard => self.fmt_table2(f),
             _ => fmt_unknown_table(f, &self.data.bits),
         }
     }
