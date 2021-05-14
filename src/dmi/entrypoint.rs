@@ -28,6 +28,15 @@ enum TableLocation {
     Loc64(u64),
 }
 
+// 32 bit headers track the size of the complete structure table as a
+// 16-bit "Structure Table Length" value, while 64 bit headers use a
+// 32-bit Structure Table Maximum Size value.
+#[derive(Debug)]
+enum TableSize {
+    MaxSize(u32),
+    Length(u16),
+}
+
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct Entrypoint {
@@ -36,7 +45,7 @@ pub struct Entrypoint {
     rev: u8,
     length: u8,
     location: TableLocation,
-    structure_max_size: u32,
+    table_size: TableSize,
 }
 
 fn read_entrypoint() -> Result<Vec<u8>, io::Error> {
@@ -95,7 +104,7 @@ impl Entrypoint {
 
         let mut bytes: [u8; 2] = [0; 2];
         for i in 0..2 {
-            bytes[i] = header[0x8 + i];
+            bytes[i] = header[0x16 + i];
         }
         let structure_max_size = u16::from_le_bytes(bytes);
 
@@ -105,7 +114,7 @@ impl Entrypoint {
             rev: header[8],
             length: header[5],
             location: TableLocation::Loc32(table_addr),
-            structure_max_size: structure_max_size.into(),
+            table_size: TableSize::Length(structure_max_size.into()),
         };
 	debug!("Read 32 bit entrypoint {:?}", ep);
 	Ok(ep)
@@ -148,7 +157,7 @@ impl Entrypoint {
             rev: header[9],
             length: header[6],
             location: TableLocation::Loc64(table_addr),
-            structure_max_size,
+            table_size: TableSize::MaxSize(structure_max_size),
         };
 	debug!("Read 64 bit entrypoint {:?}", ep);
 	Ok(ep)
@@ -157,7 +166,10 @@ impl Entrypoint {
     pub fn version(&self) -> String {
         format!("{}.{}.{}", self.major, self.minor, self.rev)
     }
-    pub fn structure_max_size(&self) -> u32 {
-        self.structure_max_size
+    pub fn table_size(&self) -> u32 {
+	match self.table_size {
+            TableSize::MaxSize(v) => v,
+	    TableSize::Length(v) => v.into(),
+	}
     }
 }

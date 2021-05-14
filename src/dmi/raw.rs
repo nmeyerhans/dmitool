@@ -27,7 +27,7 @@ pub fn read_raw_table(
     id: u8,
     entrypoint: entrypoint::Entrypoint,
 ) -> Result<table::Table, err::DMIParserError> {
-    let table_size = entrypoint.structure_max_size();
+    let table_size = entrypoint.table_size();
     let mut t = table::Table::read()?;
 
     for _i in 0..1000 {
