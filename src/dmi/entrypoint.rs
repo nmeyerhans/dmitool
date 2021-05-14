@@ -22,12 +22,14 @@ use std::str;
 
 const ENTRYPOINT: &str = "/sys/firmware/dmi/tables/smbios_entry_point";
 
+#[derive(Debug)]
 enum TableLocation {
     Loc32(u32),
     Loc64(u64),
 }
 
 #[allow(dead_code)]
+#[derive(Debug)]
 pub struct Entrypoint {
     major: u8,
     minor: u8,
@@ -97,15 +99,16 @@ impl Entrypoint {
         }
         let structure_max_size = u16::from_le_bytes(bytes);
 
-        error!("32 bit entrypoint (SMBIOS 2.1) support not implemented!");
-        Ok(Entrypoint {
+        let ep = Entrypoint {
             major: header[6],
             minor: header[7],
             rev: header[8],
             length: header[5],
             location: TableLocation::Loc32(table_addr),
             structure_max_size: structure_max_size.into(),
-        })
+        };
+	debug!("Read 32 bit entrypoint {:?}", ep);
+	Ok(ep)
     }
 
     fn from_header_64(header: &[u8]) -> Result<Entrypoint, err::DMIParserError> {
@@ -139,14 +142,16 @@ impl Entrypoint {
         let structure_max_size: u32 = u32::from_le_bytes(bytes);
         debug!("Table structrure max size is 0x{:04x}", structure_max_size);
 
-        Ok(Entrypoint {
+        let ep = Entrypoint {
             major: header[7],
             minor: header[8],
             rev: header[9],
             length: header[6],
             location: TableLocation::Loc64(table_addr),
             structure_max_size,
-        })
+        };
+	debug!("Read 64 bit entrypoint {:?}", ep);
+	Ok(ep)
     }
 
     pub fn version(&self) -> String {
