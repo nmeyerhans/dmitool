@@ -37,7 +37,6 @@ struct Data {
     pub strings: Vec<String>,
 }
 
-#[allow(dead_code)]
 enum TableId {
     BIOS,
     System,
@@ -46,34 +45,9 @@ enum TableId {
     Other,
 }
 
-#[allow(dead_code)]
 pub struct Table {
     id: TableId,
     data: Data,
-}
-
-#[allow(dead_code)]
-fn print_header_64(_header: &[u8]) -> Result<(), err::DMIParserError> {
-    let mut f = File::open(TABLES)?;
-    let mut buf = [0; 2];
-    f.read(&mut buf)?;
-    debug!(" Header bytes 1 and 2 are: {:02x} {:02x}", buf[0], buf[1]);
-    if buf[0] != 0x00 {
-        debug!("Skipping table with ID {:02x}", buf[0]);
-        let _pos: u64 = f.seek(SeekFrom::Start(buf[1].into()))?;
-    }
-    loop {
-        let _strings: Vec<String> = Vec::new();
-        let s = match read_null_terminated_string(&f) {
-            Ok(s) => s,
-            Err(_e) => break,
-        };
-        if s.len() == 0 {
-            break;
-        }
-        debug!("Read a string! {}", s);
-    }
-    Ok(())
 }
 
 fn read_null_terminated_string(fh: &File) -> Result<String, io::Error> {
@@ -91,7 +65,6 @@ fn read_null_terminated_string(fh: &File) -> Result<String, io::Error> {
     Ok(r)
 }
 
-#[allow(dead_code)]
 impl Table {
     pub fn read() -> Result<Table, err::DMIParserError> {
         Table::read_at(0)
@@ -187,7 +160,6 @@ impl Table {
         self.data.bits[0]
     }
 
-    #[allow(dead_code)]
     pub fn size(&self) -> u8 {
         self.data.bits[1]
     }
@@ -201,10 +173,6 @@ impl Table {
 
     pub fn strings(&self) -> &Vec<String> {
         &self.data.strings
-    }
-
-    pub fn bits(&self) -> &Vec<u8> {
-        &self.data.bits
     }
 
     pub fn location(&self) -> u64 {
