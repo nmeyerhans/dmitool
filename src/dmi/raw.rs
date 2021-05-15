@@ -44,7 +44,7 @@ pub fn read_raw_table(
         }
         if t.id() == id {
             debug!("Found table {}!", id);
-            print!("Table data:\n{}", &t);
+            print!("{}", &t);
             break;
         }
         if t.next_loc() > table_size.into() {

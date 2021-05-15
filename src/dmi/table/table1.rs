@@ -42,6 +42,7 @@ impl Table {
         // SMBIOS 2.0 uses len 0x8
         // SMBIOS 2.1-2.3.4 use len 0x19
         // Newer versions (2.4+) use len 0x1b
+        write!(f, "Table 1 (System Information)\n")?;
         self.fmt_manufacturer(f)?;
         self.fmt_product_name(f)?;
         self.fmt_product_version(f)?;

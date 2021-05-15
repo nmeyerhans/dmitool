@@ -115,8 +115,8 @@ impl Entrypoint {
             location: TableLocation::Loc32(table_addr),
             table_size: TableSize::Length(structure_max_size.into()),
         };
-	debug!("Read 32 bit entrypoint {:?}", ep);
-	Ok(ep)
+        debug!("Read 32 bit entrypoint {:?}", ep);
+        Ok(ep)
     }
 
     fn from_header_64(header: &[u8]) -> Result<Entrypoint, err::DMIParserError> {
@@ -158,17 +158,17 @@ impl Entrypoint {
             location: TableLocation::Loc64(table_addr),
             table_size: TableSize::MaxSize(structure_max_size),
         };
-	debug!("Read 64 bit entrypoint {:?}", ep);
-	Ok(ep)
+        debug!("Read 64 bit entrypoint {:?}", ep);
+        Ok(ep)
     }
 
     pub fn version(&self) -> String {
         format!("{}.{}.{}", self.major, self.minor, self.rev)
     }
     pub fn table_size(&self) -> u32 {
-	match self.table_size {
+        match self.table_size {
             TableSize::MaxSize(v) => v,
-	    TableSize::Length(v) => v.into(),
-	}
+            TableSize::Length(v) => v.into(),
+        }
     }
 }
