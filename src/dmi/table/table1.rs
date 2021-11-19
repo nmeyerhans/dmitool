@@ -36,6 +36,13 @@ impl Table {
     fn fmt_family(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.fmt_str(f, 0x1a, "Product Family")
     }
+    fn fmt_uuid(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // TODO: decode the system UUID
+        write!(
+            f,
+            "UUID: Seems to be present but decoding is not yet supported\n"
+        )
+    }
 
     pub fn fmt_table1(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let len: u8 = self.data.bits[1];
@@ -68,7 +75,10 @@ impl Table {
             let idx: usize = self.data.bits[0x18].into();
             write!(f, "Wake reason: {}\n", byte_values[idx].1)?;
         }
-        // TODO: decode the system UUID
+
+        if len >= 0x19 {
+            self.fmt_uuid(f)?;
+        }
         Ok(())
     }
 }
