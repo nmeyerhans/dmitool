@@ -184,8 +184,12 @@ impl Table {
     }
 
     fn fmt_str(&self, f: &mut fmt::Formatter<'_>, index: u8, label: &str) -> fmt::Result {
-        let idx: usize = (self.data.bits[usize::from(index)] - 1).into();
-        write!(f, "{}: {}\n", label, self.data.strings[idx])
+        let mut val: &str = "Unspecified";
+        if index > 0 && self.data.bits[usize::from(index)] > 0 {
+            let idx: usize = (self.data.bits[usize::from(index)] - 1).into();
+            val = &self.data.strings[idx];
+        }
+        write!(f, "{}: {}\n", label, val)
     }
 }
 
