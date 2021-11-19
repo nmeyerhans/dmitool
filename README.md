@@ -6,6 +6,8 @@ from the
 firmware as exposed by Linux via the /sys/class/dmi/id and
 /sys/firmware/dmi/entries interfaces.
 
+[![nmeyerhans](https://circleci.com/gh/nmeyerhans/dmitool.svg?style=svg)](https://app.circleci.com/pipelines/github/nmeyerhans/dmitool)
+
 **Usage:**
     
     DMI decoder tool 0.1.0
