@@ -172,3 +172,23 @@ impl Entrypoint {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn t_zero_header() {
+        let ep = Entrypoint {
+            major: 0,
+            minor: 0,
+            rev: 0,
+            length: 0,
+            location: TableLocation::Loc64(0),
+            table_size: TableSize::Length(0),
+        };
+
+        let res = ep.table_size();
+        assert_eq!(res, 0);
+    }
+}

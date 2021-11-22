@@ -16,6 +16,7 @@
 
 mod dmi;
 
+use crate::dmi::table::table;
 use std::fs;
 use std::fs::File;
 use std::io;
@@ -37,11 +38,11 @@ fn get_dmi_key(key: &str) -> Result<String, io::Error> {
     Ok(r)
 }
 
-fn read_table(id: &str) -> Result<dmi::table::Table, dmi::err::DMIParserError> {
+fn read_table(id: &str) -> Result<table::Table, dmi::err::DMIParserError> {
     let root: PathBuf = [DMI_ENTRIES_ROOT, id].iter().collect();
     let rawpath: PathBuf = root.join("raw");
     debug!("Reading table from {}", rawpath.as_path().to_str().unwrap());
-    dmi::table::Table::read_fh_at(File::open(rawpath.as_path())?, 0)
+    table::Table::read_fh_at(File::open(rawpath.as_path())?, 0)
 }
 
 fn print_dmi_id_fields(dmi_info_name_keys: &[(&str, &str)]) {
