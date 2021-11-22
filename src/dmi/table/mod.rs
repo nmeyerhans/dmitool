@@ -186,10 +186,19 @@ pub mod table {
         }
 
         pub fn fmt_str(&self, f: &mut fmt::Formatter<'_>, index: u8, label: &str) -> fmt::Result {
-            let mut val: &str = "Unspecified";
-            if index > 0 && self.data.bits[usize::from(index)] > 0 {
-                let idx: usize = (self.data.bits[usize::from(index)] - 1).into();
-                val = &self.data.strings[idx];
+            let mut val: &str = "Unknown. Buggy firmware.";
+
+            if index > 0 {
+                if usize::from(index) < self.data.bits.len() {
+                    let idx: usize = (self.data.bits[usize::from(index)]).into();
+                    if self.data.strings.len() > idx {
+                        if self.data.strings[idx].len() > 0 {
+                            val = &self.data.strings[idx];
+                        } else {
+                            val = "Unspecified";
+                        }
+                    }
+                }
             }
             write!(f, "{}: {}\n", label, val)
         }
