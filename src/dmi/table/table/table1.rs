@@ -98,18 +98,66 @@ mod tests {
             string_location: 0,
             next_loc: 0,
             bits: [0, 0, 0, 0, 0, 0, 0, 0].to_vec(),
-            strings: [].to_vec(),
+            strings: [
+                String::from(""),
+                String::from(""),
+                String::from(""),
+                String::from(""),
+                String::from(""),
+                String::from(""),
+                String::from(""),
+                String::from(""),
+            ]
+            .to_vec(),
         };
         let table = Table {
             id: TableId::System,
             data: d,
         };
-        //let r = table.fmt_table1();
         let r = format!("{}", table);
         println!("{}", r);
         // Product name is in all versions:
         assert!(r.contains("Product Name: Unspecified"));
         // Product family is v2.4 extension
         assert!(!r.contains("Product Family"));
+    }
+
+    #[test]
+    fn test_manufacturer() {
+        let d = Data {
+            location: 0,
+            string_location: 0,
+            next_loc: 0,
+            // bits[4] points to the manufacturer string
+            bits: [0, 0, 0, 0, 1, 0, 0, 0].to_vec(),
+            strings: [String::from(""), String::from("ACME Widgets, Inc.")].to_vec(),
+        };
+        let table = Table {
+            id: TableId::System,
+            data: d,
+        };
+        let r = format!("{}", table);
+        println!("{}", r);
+        assert!(r.contains("System Manufacturer: ACME Widgets, Inc."));
+    }
+
+    #[test]
+    fn test_string_index_out_of_range() {
+        let d = Data {
+            location: 0,
+            string_location: 0,
+            next_loc: 0,
+            // bits[5] should point to the product version string...
+            bits: [0, 0, 0, 0, 0, 100, 0, 0].to_vec(),
+            // but strings[100] is out of bounds:
+            strings: [].to_vec(),
+        };
+        let table = Table {
+            id: TableId::System,
+            data: d,
+        };
+        let r = format!("{}", table);
+        println!("{}", r);
+        assert!(!r.contains("ACME Widgets, Inc."));
     }
 }
