@@ -147,10 +147,10 @@ mod tests {
             location: 0,
             string_location: 0,
             next_loc: 0,
-            // bits[5] should point to the product version string...
+            // bits[5] should point to the product name string...
             bits: [0, 0, 0, 0, 0, 100, 0, 0].to_vec(),
             // but strings[100] is out of bounds:
-            strings: [].to_vec(),
+            strings: [String::from("")].to_vec(),
         };
         let table = Table {
             id: TableId::System,
@@ -158,6 +158,6 @@ mod tests {
         };
         let r = format!("{}", table);
         println!("{}", r);
-        assert!(!r.contains("ACME Widgets, Inc."));
+        assert!(r.contains("Product Name: Unknown. Buggy firmware."));
     }
 }
