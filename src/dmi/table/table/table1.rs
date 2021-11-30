@@ -14,23 +14,23 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 // 02110-1301, USA.
 
-pub mod table2 {
+mod table {
 
     use crate::table::Table;
     use std::fmt;
 
     impl Table {
         fn fmt_manufacturer(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            self.fmt_str(f, 4, "System Manufacturer")
+            self.fmt_str(f, 0x04, "System Manufacturer")
         }
         fn fmt_product_name(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            self.fmt_str(f, 5, "Product Name")
+            self.fmt_str(f, 0x05, "Product Name")
         }
         fn fmt_product_version(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            self.fmt_str(f, 6, "Product Version")
+            self.fmt_str(f, 0x06, "Product Version")
         }
         fn fmt_product_serial(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            self.fmt_str(f, 7, "Product Serial")
+            self.fmt_str(f, 0x07, "Product Serial")
         }
         fn fmt_sku(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             self.fmt_str(f, 0x19, "Product SKU")
@@ -47,15 +47,19 @@ pub mod table2 {
         }
 
         pub fn fmt_table1(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            let len: u8 = self.data.bits[1];
+            write!(f, "Table 1 (System Information)\n")?;
+            //let len: u8 = self.data.bits[1];
+            let len: u8 = self.size();
             // SMBIOS 2.0 uses len 0x8
             // SMBIOS 2.1-2.3.4 use len 0x19
             // Newer versions (2.4+) use len 0x1b
-            write!(f, "Table 1 (System Information)\n")?;
-            self.fmt_manufacturer(f)?;
-            self.fmt_product_name(f)?;
-            self.fmt_product_version(f)?;
-            self.fmt_product_serial(f)?;
+            if len >= 8 {
+                self.fmt_manufacturer(f)?;
+                self.fmt_product_name(f)?;
+                self.fmt_product_version(f)?;
+                self.fmt_product_serial(f)?;
+            }
+
             if len >= 0x1b {
                 self.fmt_sku(f)?;
                 self.fmt_family(f)?;
@@ -92,6 +96,29 @@ mod tests {
     use crate::table::Table;
     use crate::table::TableId;
     #[test]
+    // table with no meaningful data at all. sign of a buggy firmware
+    fn test_empty_table() {
+        let d = Data {
+            location: 0,
+            string_location: 0,
+            next_loc: 0,
+            bits: [].to_vec(),
+            strings: [].to_vec(),
+        };
+        let table = Table {
+            id: TableId::System,
+            data: d,
+        };
+        let r = format!("{}", table);
+        println!("{}", r);
+        // Product name is in all versions:
+        assert!(r.contains("Table 1 (System Information)"));
+        assert!(!r.contains("Product Name"));
+        // Product family is v2.4 extension
+        assert!(!r.contains("Product Family"));
+    }
+    // table with data, but all zero. more buggy firmware
+    #[test]
     fn test_zero_table() {
         let d = Data {
             location: 0,
@@ -117,7 +144,8 @@ mod tests {
         let r = format!("{}", table);
         println!("{}", r);
         // Product name is in all versions:
-        assert!(r.contains("Product Name: Unspecified"));
+        assert!(r.contains("Table 1 (System Information)"));
+        assert!(!r.contains("Product Name"));
         // Product family is v2.4 extension
         assert!(!r.contains("Product Family"));
     }
@@ -129,7 +157,7 @@ mod tests {
             string_location: 0,
             next_loc: 0,
             // bits[4] points to the manufacturer string
-            bits: [0, 0, 0, 0, 1, 0, 0, 0].to_vec(),
+            bits: [1, 8, 0, 0, 2, 0, 0, 0].to_vec(),
             strings: [String::from(""), String::from("ACME Widgets, Inc.")].to_vec(),
         };
         let table = Table {
@@ -148,7 +176,7 @@ mod tests {
             string_location: 0,
             next_loc: 0,
             // bits[5] should point to the product name string...
-            bits: [0, 0, 0, 0, 0, 100, 0, 0].to_vec(),
+            bits: [0, 8, 0, 0, 0, 100, 0, 0].to_vec(),
             // but strings[100] is out of bounds:
             strings: [String::from("")].to_vec(),
         };
@@ -159,5 +187,33 @@ mod tests {
         let r = format!("{}", table);
         println!("{}", r);
         assert!(r.contains("Product Name: Unknown. Buggy firmware."));
+    }
+
+    #[test]
+    fn test_v2_table() {
+        let d = Data {
+            location: 0,
+            string_location: 0,
+            next_loc: 0,
+            bits: [1, 8, 0, 0, 1, 2, 3, 4].to_vec(),
+            strings: [
+                String::from("test manufacturer"),
+                String::from("test name"),
+                String::from("test version"),
+                String::from("test serial"),
+            ]
+            .to_vec(),
+        };
+        let table = Table {
+            id: TableId::System,
+            data: d,
+        };
+        let r = format!("{}", table);
+        println!("{}", r);
+        // Product manufacturer, name, version, and serial are present
+        // in all v2+ versions:
+        assert!(r.contains("Product Name: test name"));
+        // Product family is v2.4 extension
+        assert!(!r.contains("Product Family"));
     }
 }

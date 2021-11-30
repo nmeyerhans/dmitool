@@ -82,30 +82,17 @@ pub mod table {
             let mut buf = [0; 256];
             // read the header, which gives us the table ID and size
             let _res = f.read(&mut buf[0..4])?;
-            if buf[0] == 0 {
-                debug!(
-                    "Read header bytes: {:02x} {:02x} {:02x} {:02x}",
-                    buf[0], buf[1], buf[2], buf[3]
-                );
-            }
-            let offset: usize = 4;
+            debug!(
+                "Read header bytes: {:02x} {:02x} {:02x} {:02x}",
+                buf[0], buf[1], buf[2], buf[3]
+            );
+            f.seek(SeekFrom::Start(location))?;
             let end: usize = (buf[1]).into();
-            let _res = f.read(&mut buf[offset..end])?;
-            if buf[0] == 0 {
-                for byte in 0..1 {
-                    debug!(
-			"Read header bytes: {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}",
-			buf[byte + 0],
-			buf[byte + 1],
-			buf[byte + 2],
-			buf[byte + 3],
-			buf[byte + 4],
-			buf[byte + 5],
-			buf[byte + 6],
-			buf[byte + 7],
-                    );
-                }
-            }
+            let _res = f.read(&mut buf[0..end])?;
+            debug!(
+                "Read header bytes: {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}",
+                buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7],
+            );
 
             let string_location = f.stream_position()?;
             let mut strings: Vec<String> = Vec::new();
@@ -163,7 +150,10 @@ pub mod table {
         }
 
         pub fn size(&self) -> u8 {
-            self.data.bits[1]
+            match self.data.bits.len() {
+                0 => 0,
+                _ => self.data.bits[1],
+            }
         }
 
         pub fn handle(&self) -> u16 {
@@ -188,16 +178,12 @@ pub mod table {
         pub fn fmt_str(&self, f: &mut fmt::Formatter<'_>, index: u8, label: &str) -> fmt::Result {
             let mut val: &str = "Unknown. Buggy firmware.";
 
-            if index > 0 {
-                if usize::from(index) < self.data.bits.len() {
-                    let idx: usize = (self.data.bits[usize::from(index)]).into();
-                    if self.data.strings.len() > idx {
-                        if self.data.strings[idx].len() > 0 {
-                            val = &self.data.strings[idx];
-                        } else {
-                            val = "Unspecified";
-                        }
-                    }
+            let idx: usize = (self.data.bits[usize::from(index)]).into();
+            if idx > 0 && self.data.strings.len() >= idx {
+                if self.data.strings[idx - 1].len() > 0 {
+                    val = &self.data.strings[idx - 1];
+                } else {
+                    val = "Unspecified";
                 }
             }
             write!(f, "{}: {}\n", label, val)
