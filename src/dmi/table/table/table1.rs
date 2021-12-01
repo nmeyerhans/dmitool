@@ -39,10 +39,30 @@ mod table {
             self.fmt_str(f, 0x1a, "Product Family")
         }
         fn fmt_uuid(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            // TODO: decode the system UUID
+            // Section 7.2.1 of SMBIOS spec 3.5.0
             write!(
                 f,
-                "UUID: Seems to be present but decoding is not yet supported\n"
+                "UUID: {:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}",
+                self.data.bits[11],
+                self.data.bits[10],
+                self.data.bits[9],
+                self.data.bits[8],
+                self.data.bits[13],
+                self.data.bits[12],
+                self.data.bits[15],
+                self.data.bits[14],
+                self.data.bits[16],
+                self.data.bits[17],
+            )?;
+            write!(
+                f,
+                "-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}\n",
+                self.data.bits[18],
+                self.data.bits[19],
+                self.data.bits[20],
+                self.data.bits[21],
+                self.data.bits[22],
+                self.data.bits[23],
             )
         }
 
