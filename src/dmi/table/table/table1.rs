@@ -54,9 +54,9 @@ mod table {
                 self.data.bits[16],
                 self.data.bits[17],
             )?;
-            write!(
+            writeln!(
                 f,
-                "-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}\n",
+                "-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
                 self.data.bits[18],
                 self.data.bits[19],
                 self.data.bits[20],
@@ -67,7 +67,7 @@ mod table {
         }
 
         pub fn fmt_table1(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            write!(f, "Table 1 (System Information)\n")?;
+            writeln!(f, "Table 1 (System Information)")?;
             //let len: u8 = self.data.bits[1];
             let len: u8 = self.size();
             // SMBIOS 2.0 uses len 0x8
@@ -99,7 +99,7 @@ mod table {
                     (8, "AC Power Restored"),
                 ];
                 let idx: usize = self.data.bits[0x18].into();
-                write!(f, "Wake reason: {}\n", byte_values[idx].1)?;
+                writeln!(f, "Wake reason: {}", byte_values[idx].1)?;
             }
 
             if len >= 0x19 {

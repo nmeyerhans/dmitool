@@ -186,21 +186,21 @@ pub mod table {
                     val = "Unspecified";
                 }
             }
-            write!(f, "{}: {}\n", label, val)
+            writeln!(f, "{}: {}", label, val)
         }
     }
 
     fn decode_byte(f: &mut fmt::Formatter<'_>, b: u8, bit_strings: &[(u8, &str)]) -> fmt::Result {
         for bit in bit_strings.iter() {
             if (b & bit.0) != 0 {
-                write!(f, "  + {}\n", bit.1)?;
+                writeln!(f, "  + {}", bit.1)?;
             }
         }
         Ok(())
     }
 
     fn fmt_unknown_table(f: &mut fmt::Formatter<'_>, data: &Vec<u8>) -> fmt::Result {
-        write!(f, "Unhandled table {}\n", data[0])
+        writeln!(f, "Unhandled table {}", data[0])
     }
 
     impl fmt::Display for Table {

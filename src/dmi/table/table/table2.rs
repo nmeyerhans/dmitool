@@ -36,7 +36,7 @@ pub mod table2 {
             self.fmt_str(f, 8, "Asset tag")
         }
         pub fn fmt_table2(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            write!(f, "Table 2 (Baseboard Information)\n")?;
+            writeln!(f, "Table 2 (Baseboard Information)")?;
             self.fmt_baseboard_manufacturer(f)?;
             self.fmt_baseboard_product(f)?;
             self.fmt_baseboard_version(f)?;

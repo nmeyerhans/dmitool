@@ -48,7 +48,7 @@ mod table0 {
             println!("BIOS Characteristics Extension byte 1:");
             for bit in bit_strings.iter() {
                 if (b & bit.0) != 0 {
-                    write!(f, "  + {}\n", bit.1)?;
+                    writeln!(f, "  + {}", bit.1)?;
                 }
             }
             Ok(())
@@ -67,7 +67,7 @@ mod table0 {
             println!("BIOS Characteristics Extension byte 2:");
             for bit in bit_strings.iter() {
                 if (b & bit.0) != 0 {
-                    write!(f, "  + {}\n", bit.1)?;
+                    writeln!(f, "  + {}", bit.1)?;
                 }
             }
             Ok(())
@@ -85,8 +85,8 @@ mod table0 {
                 write!(f, "BIOS Characteristics not supported on this system")?;
                 return Err(std::fmt::Error);
             }
-            write!(f, "BIOS Characteristics\n")?;
-            write!(f, "Table handle is {}\n", self.handle())?;
+            writeln!(f, "BIOS Characteristics")?;
+            writeln!(f, "Table handle is {}", self.handle())?;
 
             let bit_strings = [
                 (1 << 4, "ISA is supported"),
