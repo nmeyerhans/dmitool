@@ -85,15 +85,11 @@ impl Entrypoint {
         }
 
         let mut bytes: [u8; 4] = [0; 4];
-        for i in 0..4 {
-            bytes[i] = header[0x18 + i];
-        }
+        bytes[..4].clone_from_slice(&header[0x18..(0x18 + 4)]);
         let table_addr: u32 = u32::from_le_bytes(bytes);
 
         let mut bytes: [u8; 2] = [0; 2];
-        for i in 0..2 {
-            bytes[i] = header[0x16 + i];
-        }
+        bytes[..2].clone_from_slice(&header[0x16..(0x16 + 2)]);
         let table_len = u16::from_le_bytes(bytes);
 
         debug!(
@@ -102,9 +98,7 @@ impl Entrypoint {
         );
 
         let mut bytes: [u8; 2] = [0; 2];
-        for i in 0..2 {
-            bytes[i] = header[0x16 + i];
-        }
+        bytes[..2].clone_from_slice(&header[0x16..(0x16 + 2)]);
         let structure_max_size = u16::from_le_bytes(bytes);
 
         let ep = Entrypoint {
@@ -113,7 +107,7 @@ impl Entrypoint {
             rev: header[8],
             length: header[5],
             location: TableLocation::Loc32(table_addr),
-            table_size: TableSize::Length(structure_max_size.into()),
+            table_size: TableSize::Length(structure_max_size),
         };
         debug!("Read 32 bit entrypoint {:?}", ep);
         Ok(ep)
@@ -137,16 +131,12 @@ impl Entrypoint {
         }
         // Is there a more efficient way to do this?
         let mut bytes: [u8; 8] = [0; 8];
-        for i in 0..8 {
-            bytes[i] = header[0x10 + i];
-        }
+        bytes[..8].clone_from_slice(&header[0x10..(0x10 + 8)]);
         let table_addr: u64 = u64::from_le_bytes(bytes);
         info!("Table is at location 0x{:x}", table_addr);
 
         let mut bytes: [u8; 4] = [0; 4];
-        for i in 0..4 {
-            bytes[i] = header[0xc + i];
-        }
+        bytes[..4].clone_from_slice(&header[0xc..(0xc + 4)]);
         let structure_max_size: u32 = u32::from_le_bytes(bytes);
         debug!("Table structrure max size is 0x{:04x}", structure_max_size);
 

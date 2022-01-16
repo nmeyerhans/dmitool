@@ -48,7 +48,7 @@ fn read_table(id: &str) -> Result<table::Table, dmi::err::DMIParserError> {
 fn print_dmi_id_fields(dmi_info_name_keys: &[(&str, &str)]) {
     for dmi_name_key in dmi_info_name_keys.iter() {
         let sysfs_key = dmi_name_key.1;
-        let data = get_dmi_key(&sysfs_key);
+        let data = get_dmi_key(sysfs_key);
         match data {
             Ok(data) => println!("  - {} is {}", dmi_name_key.0, data),
             Err(e) => panic!("  * Error reading {}: {}", dmi_name_key.0, e),
@@ -164,7 +164,7 @@ fn main() {
     if matches.is_present("zero") {
         info!("Getting table zero");
         let table = "0-0";
-        let res = read_table(&table);
+        let res = read_table(table);
         match res {
             Ok(t) => print!("Table {}\n{}", &table, &t),
             Err(e) => panic!("Reading table {}: {}", table, e),

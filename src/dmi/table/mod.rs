@@ -40,7 +40,7 @@ pub mod table {
     }
 
     enum TableId {
-        BIOS,
+        Bios,
         System,
         Baseboard,
         Chassis,
@@ -106,7 +106,7 @@ pub mod table {
                 };
                 debug!("Read string {}", s);
                 if s.is_empty() {
-                    if strings.len() == 0 {
+                    if strings.is_empty() {
                         // special case: this table structure has no strings
                         f.seek(SeekFrom::Current(1))?;
                     }
@@ -115,15 +115,15 @@ pub mod table {
                 strings.push(s);
             }
             let res = Data {
-                location: location,
-                string_location: string_location,
+                location,
+                string_location,
                 next_loc: f.stream_position()?,
                 bits: buf.to_vec(),
-                strings: strings,
+                strings,
             };
             match res.bits[0] {
                 0 => Ok(Table {
-                    id: TableId::BIOS,
+                    id: TableId::Bios,
                     data: res,
                 }),
                 1 => Ok(Table {
@@ -157,10 +157,9 @@ pub mod table {
         }
 
         pub fn handle(&self) -> u16 {
-            // FIXME: What's the right way to do this?
-            let foo: u16 = self.data.bits[2].into();
-            let l: u16 = self.data.bits[3].into();
-            (l << 8) | foo
+            let low: u16 = self.data.bits[2].into();
+            let high: u16 = self.data.bits[3].into();
+            (high << 8) | low
         }
 
         pub fn strings(&self) -> &Vec<String> {
@@ -180,7 +179,7 @@ pub mod table {
 
             let idx: usize = (self.data.bits[usize::from(index)]).into();
             if idx > 0 && self.data.strings.len() >= idx {
-                if self.data.strings[idx - 1].len() > 0 {
+                if !self.data.strings[idx - 1].is_empty() {
                     val = &self.data.strings[idx - 1];
                 } else {
                     val = "Unspecified";
@@ -199,14 +198,14 @@ pub mod table {
         Ok(())
     }
 
-    fn fmt_unknown_table(f: &mut fmt::Formatter<'_>, data: &Vec<u8>) -> fmt::Result {
+    fn fmt_unknown_table(f: &mut fmt::Formatter<'_>, data: &[u8]) -> fmt::Result {
         writeln!(f, "Unhandled table {}", data[0])
     }
 
     impl fmt::Display for Table {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             match &self.id {
-                TableId::BIOS => self.fmt_table0(f),
+                TableId::Bios => self.fmt_table0(f),
                 TableId::System => self.fmt_table1(f),
                 TableId::Baseboard => self.fmt_table2(f),
                 _ => fmt_unknown_table(f, &self.data.bits),
