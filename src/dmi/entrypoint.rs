@@ -37,6 +37,7 @@ enum TableSize {
     Length(u16),
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Entrypoint {
     major: u8,
