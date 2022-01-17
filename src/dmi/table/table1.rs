@@ -14,107 +14,104 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 // 02110-1301, USA.
 
-mod table {
+use crate::dmi::table::Table;
+use std::fmt;
 
-    use crate::table::Table;
-    use std::fmt;
+impl Table {
+    fn fmt_manufacturer(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.fmt_str(f, 0x04, "System Manufacturer")
+    }
+    fn fmt_product_name(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.fmt_str(f, 0x05, "Product Name")
+    }
+    fn fmt_product_version(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.fmt_str(f, 0x06, "Product Version")
+    }
+    fn fmt_product_serial(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.fmt_str(f, 0x07, "Product Serial")
+    }
+    fn fmt_sku(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.fmt_str(f, 0x19, "Product SKU")
+    }
+    fn fmt_family(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.fmt_str(f, 0x1a, "Product Family")
+    }
+    fn fmt_uuid(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Section 7.2.1 of SMBIOS spec 3.5.0
+        write!(
+            f,
+            "UUID: {:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}",
+            self.data.bits[11],
+            self.data.bits[10],
+            self.data.bits[9],
+            self.data.bits[8],
+            self.data.bits[13],
+            self.data.bits[12],
+            self.data.bits[15],
+            self.data.bits[14],
+            self.data.bits[16],
+            self.data.bits[17],
+        )?;
+        writeln!(
+            f,
+            "-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+            self.data.bits[18],
+            self.data.bits[19],
+            self.data.bits[20],
+            self.data.bits[21],
+            self.data.bits[22],
+            self.data.bits[23],
+        )
+    }
 
-    impl Table {
-        fn fmt_manufacturer(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            self.fmt_str(f, 0x04, "System Manufacturer")
-        }
-        fn fmt_product_name(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            self.fmt_str(f, 0x05, "Product Name")
-        }
-        fn fmt_product_version(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            self.fmt_str(f, 0x06, "Product Version")
-        }
-        fn fmt_product_serial(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            self.fmt_str(f, 0x07, "Product Serial")
-        }
-        fn fmt_sku(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            self.fmt_str(f, 0x19, "Product SKU")
-        }
-        fn fmt_family(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            self.fmt_str(f, 0x1a, "Product Family")
-        }
-        fn fmt_uuid(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            // Section 7.2.1 of SMBIOS spec 3.5.0
-            write!(
-                f,
-                "UUID: {:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}",
-                self.data.bits[11],
-                self.data.bits[10],
-                self.data.bits[9],
-                self.data.bits[8],
-                self.data.bits[13],
-                self.data.bits[12],
-                self.data.bits[15],
-                self.data.bits[14],
-                self.data.bits[16],
-                self.data.bits[17],
-            )?;
-            writeln!(
-                f,
-                "-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-                self.data.bits[18],
-                self.data.bits[19],
-                self.data.bits[20],
-                self.data.bits[21],
-                self.data.bits[22],
-                self.data.bits[23],
-            )
+    pub fn fmt_table1(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Table 1 (System Information)")?;
+        //let len: u8 = self.data.bits[1];
+        let len: u8 = self.size();
+        // SMBIOS 2.0 uses len 0x8
+        // SMBIOS 2.1-2.3.4 use len 0x19
+        // Newer versions (2.4+) use len 0x1b
+        if len >= 8 {
+            self.fmt_manufacturer(f)?;
+            self.fmt_product_name(f)?;
+            self.fmt_product_version(f)?;
+            self.fmt_product_serial(f)?;
         }
 
-        pub fn fmt_table1(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            writeln!(f, "Table 1 (System Information)")?;
-            //let len: u8 = self.data.bits[1];
-            let len: u8 = self.size();
-            // SMBIOS 2.0 uses len 0x8
-            // SMBIOS 2.1-2.3.4 use len 0x19
-            // Newer versions (2.4+) use len 0x1b
-            if len >= 8 {
-                self.fmt_manufacturer(f)?;
-                self.fmt_product_name(f)?;
-                self.fmt_product_version(f)?;
-                self.fmt_product_serial(f)?;
-            }
-
-            if len >= 0x1b {
-                self.fmt_sku(f)?;
-                self.fmt_family(f)?;
-            }
-
-            if len > 8 {
-                // Wake-up type is only defined for SMBIOS 2.1+, determined by the structure length
-                let byte_values = [
-                    (0, "Reserved"),
-                    (1, "Other"),
-                    (2, "Unknown"),
-                    (3, "APM Timer"),
-                    (4, "Modem ring"),
-                    (5, "LAN Remote"),
-                    (6, "Power switch"),
-                    (7, "PCI PME#"),
-                    (8, "AC Power Restored"),
-                ];
-                let idx: usize = self.data.bits[0x18].into();
-                writeln!(f, "Wake reason: {}", byte_values[idx].1)?;
-            }
-
-            if len >= 0x19 {
-                self.fmt_uuid(f)?;
-            }
-            Ok(())
+        if len >= 0x1b {
+            self.fmt_sku(f)?;
+            self.fmt_family(f)?;
         }
+
+        if len > 8 {
+            // Wake-up type is only defined for SMBIOS 2.1+, determined by the structure length
+            let byte_values = [
+                (0, "Reserved"),
+                (1, "Other"),
+                (2, "Unknown"),
+                (3, "APM Timer"),
+                (4, "Modem ring"),
+                (5, "LAN Remote"),
+                (6, "Power switch"),
+                (7, "PCI PME#"),
+                (8, "AC Power Restored"),
+            ];
+            let idx: usize = self.data.bits[0x18].into();
+            writeln!(f, "Wake reason: {}", byte_values[idx].1)?;
+        }
+
+        if len >= 0x19 {
+            self.fmt_uuid(f)?;
+        }
+        Ok(())
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::table::Data;
-    use crate::table::Table;
-    use crate::table::TableId;
+    use crate::dmi::table::Table;
+    use crate::dmi::table::Data;
+    use crate::dmi::table::TableId;
     #[test]
     // table with no meaningful data at all. sign of a buggy firmware
     fn test_empty_table() {

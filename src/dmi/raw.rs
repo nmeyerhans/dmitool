@@ -16,7 +16,7 @@
 
 use crate::dmi::entrypoint;
 use crate::dmi::err;
-use crate::dmi::table::table;
+use crate::dmi::table::Table;
 
 pub fn decode_entrypoint() -> Result<entrypoint::Entrypoint, err::DMIParserError> {
     let t = entrypoint::Entrypoint::read()?;
@@ -26,9 +26,9 @@ pub fn decode_entrypoint() -> Result<entrypoint::Entrypoint, err::DMIParserError
 pub fn read_raw_table(
     id: u8,
     entrypoint: entrypoint::Entrypoint,
-) -> Result<table::Table, err::DMIParserError> {
+) -> Result<Table, err::DMIParserError> {
     let table_size = entrypoint.table_size();
-    let mut t = table::Table::read()?;
+    let mut t = Table::read()?;
 
     for _i in 0..1000 {
         debug!(
@@ -51,7 +51,7 @@ pub fn read_raw_table(
             warn!("Reached end of table");
             break;
         }
-        t = table::Table::read_at(t.next_loc())?;
+        t = Table::read_at(t.next_loc())?;
     }
     Ok(t)
 }
