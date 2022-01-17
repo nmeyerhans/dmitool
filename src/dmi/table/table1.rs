@@ -109,8 +109,8 @@ impl Table {
 
 #[cfg(test)]
 mod tests {
-    use crate::dmi::table::Table;
     use crate::dmi::table::Data;
+    use crate::dmi::table::Table;
     use crate::dmi::table::TableId;
     #[test]
     // table with no meaningful data at all. sign of a buggy firmware
