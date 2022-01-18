@@ -24,6 +24,7 @@ use std::io::SeekFrom;
 mod table0;
 mod table1;
 mod table2;
+mod table3;
 
 const TABLES: &str = "/sys/firmware/dmi/tables/DMI";
 
@@ -175,18 +176,18 @@ impl Table {
     pub fn fmt_str(&self, f: &mut fmt::Formatter<'_>, index: u8, label: &str) -> fmt::Result {
         let mut val: &str = "Unspecified";
 
-	debug!("formatting string from index {}", index);
+        debug!("formatting string from index {}", index);
         let idx: usize = (self.data.bits[usize::from(index)]).into();
-	debug!("String is at location {}", idx);
+        debug!("String is at location {}", idx);
         if idx > 0 {
-	    if self.data.strings.len() >= idx {
-		if !self.data.strings[idx - 1].is_empty() {
+            if self.data.strings.len() >= idx {
+                if !self.data.strings[idx - 1].is_empty() {
                     val = &self.data.strings[idx - 1];
-		}
-	    } else {
-		val = "String index out of range. Buggy firmware?"
-	    }
-	}
+                }
+            } else {
+                val = "String index out of range. Buggy firmware?"
+            }
+        }
         writeln!(f, "{}: {}", label, val)
     }
 }
@@ -210,6 +211,7 @@ impl fmt::Display for Table {
             TableId::Bios => self.fmt_table0(f),
             TableId::System => self.fmt_table1(f),
             TableId::Baseboard => self.fmt_table2(f),
+            TableId::Chassis => self.fmt_table3(f),
             _ => fmt_unknown_table(f, &self.data.bits),
         }
     }
