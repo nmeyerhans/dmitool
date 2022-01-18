@@ -203,7 +203,7 @@ mod tests {
         };
         let r = format!("{}", table);
         println!("{}", r);
-        assert!(r.contains("Product Name: Unknown. Buggy firmware."));
+        assert!(r.contains("Product Name: String index out of range. Buggy firmware?"));
     }
 
     #[test]

@@ -173,16 +173,20 @@ impl Table {
     }
 
     pub fn fmt_str(&self, f: &mut fmt::Formatter<'_>, index: u8, label: &str) -> fmt::Result {
-        let mut val: &str = "Unknown. Buggy firmware.";
+        let mut val: &str = "Unspecified";
 
+	debug!("formatting string from index {}", index);
         let idx: usize = (self.data.bits[usize::from(index)]).into();
-        if idx > 0 && self.data.strings.len() >= idx {
-            if !self.data.strings[idx - 1].is_empty() {
-                val = &self.data.strings[idx - 1];
-            } else {
-                val = "Unspecified";
-            }
-        }
+	debug!("String is at location {}", idx);
+        if idx > 0 {
+	    if self.data.strings.len() >= idx {
+		if !self.data.strings[idx - 1].is_empty() {
+                    val = &self.data.strings[idx - 1];
+		}
+	    } else {
+		val = "String index out of range. Buggy firmware?"
+	    }
+	}
         writeln!(f, "{}: {}", label, val)
     }
 }
