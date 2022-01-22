@@ -93,6 +93,16 @@ impl Table {
             writeln!(f, "BIOS starts at memory location 0x{:0>4x}", bios_address)?;
         }
 
+        if self.data.bits[0x9] == 0xff {
+            writeln!(
+                f,
+                "BIOS size is > 16 MB. See Extended BIOS ROM Size for actual size"
+            )?;
+        } else {
+            let bios_sz: u32 = 64 * u32::from(self.data.bits[0x9] + 1);
+            writeln!(f, "BIOS size is {} kB", bios_sz)?;
+        }
+
         let bit_strings = [
             (1 << 4, "ISA is supported"),
             (1 << 5, "MCA is supported"),
@@ -208,5 +218,6 @@ mod tests {
         assert!(r.contains("Selectable boot is supported"));
         assert!(r.contains("Int 14h: serial services are supported"));
         assert!(r.contains("BIOS starts at memory location 0x800e"));
+        assert!(r.contains("BIOS size is 192 kB"));
     }
 }
