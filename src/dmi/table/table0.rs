@@ -87,6 +87,12 @@ impl Table {
         writeln!(f, "BIOS Characteristics")?;
         writeln!(f, "Table handle is {}", self.handle())?;
 
+        if self.data.bits[0x7] != 0 || self.data.bits[0x6] != 0 {
+            let bios_address: u16 =
+                (u16::from(self.data.bits[0x7]) << 8) | u16::from(self.data.bits[0x6]);
+            writeln!(f, "BIOS starts at memory location 0x{:0>4x}", bios_address)?;
+        }
+
         let bit_strings = [
             (1 << 4, "ISA is supported"),
             (1 << 5, "MCA is supported"),
@@ -165,7 +171,7 @@ mod tests {
                 0x1,
                 1,    // BIOS vendor name string
                 2,    // BIOS version string
-                0x80, // BIOS starting address segment (2 bytes)
+                0x0e, // BIOS starting address segment (2 bytes)
                 0x80,
                 3,      // BIOS release date string
                 2,      // BIOS size (n + 1 64 kB chunks)
@@ -201,5 +207,6 @@ mod tests {
         assert!(r.contains("Boot from CD is supported"));
         assert!(r.contains("Selectable boot is supported"));
         assert!(r.contains("Int 14h: serial services are supported"));
+        assert!(r.contains("BIOS starts at memory location 0x800e"));
     }
 }
