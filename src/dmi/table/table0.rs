@@ -146,3 +146,60 @@ impl Table {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::dmi::table::Data;
+    use crate::dmi::table::Table;
+    use crate::dmi::table::TableId;
+    #[test]
+    fn test_decode_table0_v20() {
+        let d = Data {
+            location: 0,
+            string_location: 0,
+            next_loc: 0,
+            bits: [
+                0,    //type
+                0x12, // length is 0x12 + entension bytes (zero here)
+                0x0,  // handle (2 bytes)
+                0x1,
+                1,    // BIOS vendor name string
+                2,    // BIOS version string
+                0x80, // BIOS starting address segment (2 bytes)
+                0x80,
+                3,      // BIOS release date string
+                2,      // BIOS size (n + 1 64 kB chunks)
+                128,    // BIOS characteristics (8 bytes)
+                128,    // CDROM boot is supported
+                1,      // selectable boot is supported
+                1 << 4, // serial support
+                0,
+                0,
+                0,
+                0,
+            ]
+            .to_vec(),
+            strings: [
+                String::from("ACME Widgets, Inc."),
+                String::from("1.0a+3"),
+                String::from("5/8/1977"),
+            ]
+            .to_vec(),
+        };
+        let table = Table {
+            id: TableId::Bios,
+            data: d,
+        };
+        let r = format!("{}", table);
+        println!("{}", r);
+        assert!(r.contains("BIOS Characteristics"));
+        assert!(r.contains("Table handle is 256"));
+        assert!(r.contains("BIOS Vendor: ACME Widgets, Inc."));
+        assert!(r.contains("BIOS Version: 1.0a+3"));
+        assert!(r.contains("BIOS Release Date: 5/8/1977"));
+        assert!(r.contains("PCI is supported"));
+        assert!(r.contains("Boot from CD is supported"));
+        assert!(r.contains("Selectable boot is supported"));
+        assert!(r.contains("Int 14h: serial services are supported"));
+    }
+}
