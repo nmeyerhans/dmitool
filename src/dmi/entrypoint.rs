@@ -110,7 +110,7 @@ impl Entrypoint {
             location: TableLocation::Loc32(table_addr),
             table_size: TableSize::Length(structure_max_size),
         };
-        debug!("Read 32 bit entrypoint {:?}", ep);
+        debug!("Read 32 bit entrypoint {:?} at {:#x}", ep, ep.table_location());
         Ok(ep)
     }
 
@@ -149,7 +149,7 @@ impl Entrypoint {
             location: TableLocation::Loc64(table_addr),
             table_size: TableSize::MaxSize(structure_max_size),
         };
-        debug!("Read 64 bit entrypoint {:?}", ep);
+        debug!("Read 64 bit entrypoint {:?} at {:#x}", ep, ep.table_location());
         Ok(ep)
     }
 
@@ -161,6 +161,13 @@ impl Entrypoint {
             TableSize::MaxSize(v) => v,
             TableSize::Length(v) => v.into(),
         }
+    }
+
+    pub fn table_location(&self) -> u64 {
+	match self.location {
+	    TableLocation::Loc64(v) => v,
+	    TableLocation::Loc32(v) => v.into(),
+	}
     }
 }
 
@@ -181,5 +188,7 @@ mod tests {
 
         let res = ep.table_size();
         assert_eq!(res, 0);
+	let loc = ep.table_location();
+	assert_eq!(loc, 0);
     }
 }
