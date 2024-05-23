@@ -127,7 +127,7 @@ fn do_table(id: u8) {
 }
 
 fn main() {
-    let matches = App::new("DMI decoder tool")
+    let args = App::new("DMI decoder tool")
         .version("0.1.0")
         .author("Noah Meyerhans <frodo@morgul.net>")
         .about("Decodes and prints system information from the SMBIOS")
@@ -162,7 +162,7 @@ fn main() {
 
     env_logger::init_from_env(env);
 
-    if matches.is_present("zero") {
+    if args.is_present("zero") {
         info!("Getting table zero");
         let table = "0-0";
         let res = read_table(table);
@@ -170,10 +170,10 @@ fn main() {
             Ok(t) => print!("Table {}\n{}", &table, &t),
             Err(e) => panic!("Reading table {}: {}", table, e),
         }
-    } else if matches.is_present("entrypoint") {
+    } else if args.is_present("entrypoint") {
         do_entrypoint();
-    } else if matches.is_present("table") {
-        let table_id: u8 = match matches.value_of("table").unwrap().parse() {
+    } else if args.is_present("table") {
+        let table_id: u8 = match args.value_of("table").unwrap().parse() {
             Ok(t) => t,
             Err(_e) => panic!("unable to parse table ID"),
         };
