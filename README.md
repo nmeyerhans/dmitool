@@ -10,21 +10,26 @@ firmware as exposed by Linux via the /sys/class/dmi/id and
 
 **Usage:**
     
-    DMI decoder tool 0.1.0
-    Noah Meyerhans <frodo@morgul.net>
-    Decodes and prints system information from the SMBIOS
-    
-    USAGE:
-        dmitool [FLAGS] [OPTIONS]
-    
-    FLAGS:
-        -e, --entrypoint    read SMBIOS entrypoint
-        -h, --help          Prints help information
-        -V, --version       Prints version information
-        -0                  print table 0 via the /sys/firmware/dmi/entries interface
-    
-    OPTIONS:
-        -t, --table <TABLE>    print the given table via the /sys/firmware/dmi/tables
+```
+$ dmitool --help
+DMI decoder tool 0.1.0
+Noah Meyerhans <frodo@morgul.net>
+Decodes and prints system information from the SMBIOS
+
+USAGE:
+    dmitool [FLAGS] [OPTIONS]
+
+FLAGS:
+    -d, --debug         enable debug output
+    -e, --entrypoint    read SMBIOS entrypoint
+    -h, --help          Prints help information
+    -V, --version       Prints version information
+    -0                  print table 0 via the /sys/firmware/dmi/entries interface
+
+OPTIONS:
+    -t, --table <TABLE>    print the given table via the /sys/firmware/dmi/tables
+
+```
 
 **Example output (from a ThinkPad):**
 
