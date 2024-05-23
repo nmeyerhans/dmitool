@@ -16,6 +16,7 @@
 
 mod dmi;
 
+use std::env;
 use std::fs;
 use std::fs::File;
 use std::io;
@@ -154,7 +155,18 @@ fn main() {
                 .conflicts_with("zero")
                 .help("read SMBIOS entrypoint"),
         )
-        .get_matches();
+        .arg(
+	    Arg::with_name("debug")
+		.short("d")
+		.long("debug")
+		.takes_value(false)
+		.help("enable debug output")
+	)
+	.get_matches();
+
+    if args.is_present("debug") {
+	env::set_var("LOG_LEVEL", "debug")
+    }
 
     let env = Env::default()
         .filter_or("LOG_LEVEL", "info")
