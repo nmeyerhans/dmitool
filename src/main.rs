@@ -134,13 +134,13 @@ fn main() {
         .about("Decodes and prints system information from the SMBIOS")
         .arg(
             Arg::with_name("zero")
-                .short("0")
+                .short('0')
                 .takes_value(false)
                 .help("print table 0 via the /sys/firmware/dmi/entries interface"),
         )
         .arg(
             Arg::with_name("table")
-                .short("t")
+                .short('t')
                 .long("table")
                 .takes_value(true)
                 .value_name("TABLE")
@@ -149,7 +149,7 @@ fn main() {
         )
         .arg(
             Arg::with_name("entrypoint")
-                .short("e")
+                .short('e')
                 .long("entrypoint")
                 .takes_value(false)
                 .conflicts_with("zero")
@@ -157,7 +157,7 @@ fn main() {
         )
         .arg(
 	    Arg::with_name("debug")
-		.short("d")
+		.short('d')
 		.long("debug")
 		.takes_value(false)
 		.help("enable debug output")

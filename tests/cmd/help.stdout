@@ -3,14 +3,12 @@ Noah Meyerhans <frodo@morgul.net>
 Decodes and prints system information from the SMBIOS
 
 USAGE:
-    dmitool [FLAGS] [OPTIONS]
-
-FLAGS:
-    -d, --debug         enable debug output
-    -e, --entrypoint    read SMBIOS entrypoint
-    -h, --help          Prints help information
-    -V, --version       Prints version information
-    -0                  print table 0 via the /sys/firmware/dmi/entries interface
+    dmitool [OPTIONS]
 
 OPTIONS:
+    -0                     print table 0 via the /sys/firmware/dmi/entries interface
+    -d, --debug            enable debug output
+    -e, --entrypoint       read SMBIOS entrypoint
+    -h, --help             Print help information
     -t, --table <TABLE>    print the given table via the /sys/firmware/dmi/tables
+    -V, --version          Print version information
