@@ -174,7 +174,7 @@ fn main() {
 
     env_logger::init_from_env(env);
 
-    if args.contains_id("zero") {
+    if args.get_flag("zero") {
         info!("Getting table zero");
         let table = "0-0";
         let res = read_table(table);
@@ -182,7 +182,7 @@ fn main() {
             Ok(t) => print!("Table {}\n{}", &table, &t),
             Err(e) => panic!("Reading table {}: {}", table, e),
         }
-    } else if args.contains_id("entrypoint") {
+    } else if args.get_flag("entrypoint") {
         do_entrypoint();
     } else if args.contains_id("table") {
         let table_id: u8 = match args.get_one::<String>("table").unwrap().parse() {
