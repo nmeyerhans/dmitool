@@ -34,6 +34,9 @@ impl Table {
     pub fn fmt_baseboard_asset_tag(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.fmt_str(f, 8, "Asset tag")
     }
+    pub fn fmt_board_location(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+	self.fmt_str(f, 0xa, "Location in chassis")
+    }
     pub fn fmt_feature_flags(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let byte: u8 = self.data.bits[0x9];
         let bit_strings = [
@@ -74,6 +77,7 @@ impl Table {
         self.fmt_baseboard_version(f)?;
         self.fmt_baseboard_serial(f)?;
         self.fmt_baseboard_asset_tag(f)?;
+	self.fmt_board_location(f)?;
         if len > 0x8 {
             self.fmt_feature_flags(f)?;
         }
@@ -100,13 +104,16 @@ mod tests {
             next_loc: 0,
             bits: [
                 0x2, // type
-                0x8, // length
+                0xa, // length
                 0x0, // handle, 2 bytes
-                0x1, 0x1, // Manufacturer string
+                0x1, // handle (cont)
+		0x1, // Manufacturer string
                 0x2, // Product string
                 0x3, // Version string
                 0x4, // Serial Number string
                 0x5, // Asset Tag string
+		0x0, // Feature flags
+		0x6, // Location in chassis
             ]
             .to_vec(),
             strings: [
@@ -115,6 +122,7 @@ mod tests {
                 String::from("0.1.2"),
                 String::from("ABCDabcd"),
                 String::from("My Asset Tag"),
+		String::from("Some location"),
             ]
             .to_vec(),
         };
@@ -129,6 +137,7 @@ mod tests {
         assert!(r.contains("Version: 0.1.2"));
         assert!(r.contains("Serial: ABCDabcd"));
         assert!(r.contains("Asset tag: My Asset Tag"));
+	assert!(r.contains("Location in chassis: Some location"));
     }
 
     #[test]
@@ -148,7 +157,7 @@ mod tests {
                 0x4,  // Serial Number string
                 0x5,  // Asset Tag string
                 0x1f, // Features
-                0,    // Location in chassis string,
+                0x6,  // Location in chassis string,
                 0,    // Chassis handle byte 1
                 0,    // Chassis handle byte 2
                 0xa,  // Board type (motherboard)
@@ -160,6 +169,7 @@ mod tests {
                 String::from("0.1.2"),
                 String::from("ABCDabcd"),
                 String::from("My Asset Tag"),
+		String::from("Nubus slot 7-11"),
             ]
             .to_vec(),
         };
@@ -180,6 +190,7 @@ mod tests {
         assert!(r.contains("  + Board is replaceable"));
         assert!(r.contains("  + Board is hot swappable"));
         assert!(r.contains("Board type: Motherboard (includes processor, memory, and I/O)"));
+	assert!(r.contains("Location in chassis: Nubus slot 7-11"));
     }
 
     #[test]
@@ -197,6 +208,8 @@ mod tests {
                 0x3, // Version string
                 0x4, // Serial Number string
                 0x5, // Asset Tag string
+		0x0, // Feature flags
+		0x6, // Location in chassis
             ]
             .to_vec(),
             strings: [].to_vec(),
@@ -212,5 +225,6 @@ mod tests {
         assert!(r.contains("Version: String index out of range. Buggy firmware?"));
         assert!(r.contains("Serial: String index out of range. Buggy firmware?"));
         assert!(r.contains("Asset tag: String index out of range. Buggy firmware?"));
+	assert!(r.contains("Location in chassis: String index out of range. Buggy firmware?"));
     }
 }
