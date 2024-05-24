@@ -29,7 +29,7 @@ extern crate log;
 
 use env_logger::Env;
 
-use clap::{App, Arg};
+use clap::{Command, Arg};
 
 const DMI_ID_ROOT: &str = "/sys/class/dmi/id";
 const DMI_ENTRIES_ROOT: &str = "/sys/firmware/dmi/entries";
@@ -128,18 +128,18 @@ fn do_table(id: u8) {
 }
 
 fn main() {
-    let args = App::new("DMI decoder tool")
+    let args = Command::new("DMI decoder tool")
         .version("0.1.0")
         .author("Noah Meyerhans <frodo@morgul.net>")
         .about("Decodes and prints system information from the SMBIOS")
         .arg(
-            Arg::with_name("zero")
+            Arg::new("zero")
                 .short('0')
                 .takes_value(false)
                 .help("print table 0 via the /sys/firmware/dmi/entries interface"),
         )
         .arg(
-            Arg::with_name("table")
+            Arg::new("table")
                 .short('t')
                 .long("table")
                 .takes_value(true)
@@ -148,7 +148,7 @@ fn main() {
                 .help("print the given table via the /sys/firmware/dmi/tables"),
         )
         .arg(
-            Arg::with_name("entrypoint")
+            Arg::new("entrypoint")
                 .short('e')
                 .long("entrypoint")
                 .takes_value(false)
@@ -156,7 +156,7 @@ fn main() {
                 .help("read SMBIOS entrypoint"),
         )
         .arg(
-	    Arg::with_name("debug")
+	    Arg::new("debug")
 		.short('d')
 		.long("debug")
 		.takes_value(false)
@@ -164,7 +164,7 @@ fn main() {
 	)
 	.get_matches();
 
-    if args.is_present("debug") {
+    if args.contains_id("debug") {
 	env::set_var("LOG_LEVEL", "debug")
     }
 
@@ -174,7 +174,7 @@ fn main() {
 
     env_logger::init_from_env(env);
 
-    if args.is_present("zero") {
+    if args.contains_id("zero") {
         info!("Getting table zero");
         let table = "0-0";
         let res = read_table(table);
@@ -182,10 +182,10 @@ fn main() {
             Ok(t) => print!("Table {}\n{}", &table, &t),
             Err(e) => panic!("Reading table {}: {}", table, e),
         }
-    } else if args.is_present("entrypoint") {
+    } else if args.contains_id("entrypoint") {
         do_entrypoint();
-    } else if args.is_present("table") {
-        let table_id: u8 = match args.value_of("table").unwrap().parse() {
+    } else if args.contains_id("table") {
+        let table_id: u8 = match args.get_one::<String>("table").unwrap().parse() {
             Ok(t) => t,
             Err(_e) => panic!("unable to parse table ID"),
         };
