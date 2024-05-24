@@ -135,14 +135,14 @@ fn main() {
         .arg(
             Arg::new("zero")
                 .short('0')
-                .takes_value(false)
+                .num_args(0)
                 .help("print table 0 via the /sys/firmware/dmi/entries interface"),
         )
         .arg(
             Arg::new("table")
                 .short('t')
                 .long("table")
-                .takes_value(true)
+                .num_args(1)
                 .value_name("TABLE")
                 .conflicts_with("zero")
                 .help("print the given table via the /sys/firmware/dmi/tables"),
@@ -151,7 +151,7 @@ fn main() {
             Arg::new("entrypoint")
                 .short('e')
                 .long("entrypoint")
-                .takes_value(false)
+                .num_args(0)
                 .conflicts_with("zero")
                 .help("read SMBIOS entrypoint"),
         )
@@ -159,12 +159,12 @@ fn main() {
 	    Arg::new("debug")
 		.short('d')
 		.long("debug")
-		.takes_value(false)
+		.num_args(0)
 		.help("enable debug output")
 	)
 	.get_matches();
 
-    if args.contains_id("debug") {
+    if args.get_flag("debug") {
 	env::set_var("LOG_LEVEL", "debug")
     }
 
