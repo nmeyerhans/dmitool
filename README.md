@@ -6,7 +6,7 @@ from the
 firmware as exposed by Linux via the /sys/class/dmi/id and
 /sys/firmware/dmi/entries interfaces.
 
-[![nmeyerhans](https://circleci.com/gh/nmeyerhans/dmitool.svg?style=svg)](https://app.circleci.com/pipelines/github/nmeyerhans/dmitool)
+![build](https://github.com/nmeyerhans/dmitool/actions/workflows/rust.yml/badge.svg)
 
 **Usage:**
     
